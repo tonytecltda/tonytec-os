@@ -41,7 +41,7 @@ export default async function PortalOsPage({ searchParams }: PageProps<"/portal/
         <EmptyState icon={FileText} titulo="Nenhuma ordem de serviço ainda" />
       ) : (
         <>
-          <ul className="grid gap-3">
+          <ul className="grid grid-cols-1 gap-3">
             {ordens.map((o) => (
               <li key={o.id}>
                 <Card>

@@ -39,7 +39,7 @@ export function LoginForm({ next, linkError }: { next?: string; linkError?: stri
               <Label htmlFor="password">Senha</Label>
               <Link
                 href="/esqueci-senha"
-                className="text-muted-foreground text-xs underline-offset-4 hover:underline"
+                className="text-muted-foreground -my-2 inline-block py-2 text-sm underline-offset-4 hover:underline"
               >
                 Esqueci minha senha
               </Link>

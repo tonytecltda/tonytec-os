@@ -1,6 +1,7 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import Link from "next/link";
+import { KeyRound, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,6 +43,11 @@ export function UserMenu({ nome, email, papel }: { nome: string; email: string; 
           <div className="text-muted-foreground mt-1 text-xs">{papel}</div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/definir-senha">
+            <KeyRound /> Alterar minha senha
+          </Link>
+        </DropdownMenuItem>
         <ThemeSubmenu />
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onSelect={() => void signOut()}>

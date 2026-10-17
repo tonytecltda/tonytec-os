@@ -70,7 +70,7 @@ export default async function PortalChamadosPage({ searchParams }: PageProps<"/p
         </EmptyState>
       ) : (
         <>
-          <ul className="grid gap-3">
+          <ul className="grid grid-cols-1 gap-3">
             {chamados.map((c) => (
               <li key={c.id}>
                 <Link

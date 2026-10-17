@@ -26,7 +26,7 @@ const PAGINAS = {
     "/admin/configuracoes?aba=sla",
   ],
   cliente: ["/portal", "/portal/chamados", "/portal/chamados/novo", "/portal/contrato"],
-  tecnico: ["/tecnico"],
+  tecnico: ["/tecnico", "/tecnico/historico", "/tecnico/assinatura", "/definir-senha"],
 };
 
 async function entrar(page: Page, email: string, senha: string) {

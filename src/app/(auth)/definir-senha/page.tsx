@@ -15,7 +15,7 @@ export default function DefinirSenhaPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Definir senha</CardTitle>
+        <CardTitle className="text-xl">Definir ou alterar senha</CardTitle>
         <CardDescription>Crie a senha que você usará para acessar o sistema.</CardDescription>
       </CardHeader>
       <CardContent>

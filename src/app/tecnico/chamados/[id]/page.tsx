@@ -48,13 +48,13 @@ async function AtendimentoAcoes({
         aberta?.status === "aguardando_assinatura" ? (
           <Button size="lg" asChild>
             <Link href={`/tecnico/os/${aberta.id}/assinatura`}>
-              <FileSignature /> Coletar assinatura da OS {aberta.numero}
+              <FileSignature /> Coletar assinatura
             </Link>
           </Button>
         ) : (
           <IniciarAtendimentoButton
             chamadoId={chamadoId}
-            rotulo={aberta ? `Continuar atendimento (OS ${aberta.numero})` : "Iniciar atendimento"}
+            rotulo={aberta ? "Continuar atendimento" : "Iniciar atendimento"}
           />
         )
       ) : null}

@@ -36,7 +36,7 @@ export default async function HistoricoTecnicoPage({ searchParams }: PageProps<"
         <EmptyState icon={History} titulo="Nenhuma OS encerrada ainda" />
       ) : (
         <>
-          <ul className="grid gap-2">
+          <ul className="grid grid-cols-1 gap-2">
             {ordens.map((o) => (
               <li key={o.id}>
                 <Card>

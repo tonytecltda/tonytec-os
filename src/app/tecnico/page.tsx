@@ -99,7 +99,7 @@ export default async function TecnicoHome() {
           descricao="Quando a Tonytec atribuir um chamado a você, ele aparece aqui."
         />
       ) : (
-        <ul className="grid gap-3">
+        <ul className="grid grid-cols-1 gap-3">
           {lista.map((c) => {
             const rota = c.unidades ? linkRotaMaps(c.unidades) : null;
             const sla = slaPrincipal(c);
