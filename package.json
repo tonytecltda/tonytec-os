@@ -19,6 +19,7 @@
     "test:rls": "tsx scripts/test-rls.ts",
     "test:relatorios": "tsx scripts/test-relatorios.ts",
     "test:fase6": "tsx scripts/test-fase6.ts",
+    "manual": "tsx scripts/manual/gerar-manual.tsx",
     "golive:limpar": "tsx scripts/golive-limpar.ts",
     "test:unit": "tsx --test \"src/**/*.test.ts\"",
     "test:e2e": "playwright test"

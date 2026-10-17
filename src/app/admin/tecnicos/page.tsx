@@ -36,7 +36,10 @@ export default async function TecnicosPage() {
 
   return (
     <>
-      <PageHeader titulo="Técnicos" descricao="Equipe de campo. A produtividade por técnico chega na Fase 5.">
+      <PageHeader
+        titulo="Técnicos"
+        descricao="Equipe de campo. A produtividade por técnico está em Relatórios."
+      >
         {novo}
       </PageHeader>
       {error ? (

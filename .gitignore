@@ -56,3 +56,6 @@ next-env.d.ts
 
 # o exemplo de variáveis precisa ser versionado
 !.env.example
+
+# entregas com dados de acesso (manual personalizado etc.)
+/entregas/

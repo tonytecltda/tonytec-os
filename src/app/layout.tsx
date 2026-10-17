@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   title: { default: "Tonytec OS", template: "%s · Tonytec OS" },
   description: "Gestão de chamados e ordens de serviço — Tonytec Ltda",
   robots: { index: false, follow: false },
+  appleWebApp: { capable: true, title: "Tonytec OS", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {

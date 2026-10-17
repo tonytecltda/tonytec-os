@@ -302,7 +302,7 @@ async function AbaContratos({ clienteId }: { clienteId: string }) {
         </Table>
       </div>
       <p className="text-muted-foreground mt-3 text-xs">
-        O consumo de visitas/horas do mês aparece aqui a partir da Fase 4 (cobrança).
+        O saldo de visitas e horas do mês aparece no detalhe de cada contrato.
       </p>
     </>
   );
