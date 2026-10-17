@@ -194,5 +194,75 @@ export type ComentarioInput = z.infer<typeof comentarioSchema>;
 
 export const STATUS_CHAMADO = statusChamado.options;
 
+// ---------------------------------------------------------------- ordens de serviço
+const tipoAtendimento = z.enum(["corretivo", "preventivo", "instalacao", "vistoria", "outro"]);
+
+export const itemOsSchema = z.object({
+  id: z.uuid(),
+  catalogo_id: z.uuid().nullable(),
+  descricao: z.string().trim().min(1, "Descreva o item.").max(200),
+  tipo: z.enum(["material", "equipamento", "mao_de_obra", "servico"]),
+  quantidade: z.number({ error: "Quantidade inválida." }).positive("Quantidade inválida.").max(100_000),
+  valor_unitario: z.number({ error: "Valor inválido." }).min(0, "Valor inválido.").max(10_000_000),
+  cobrado: z.boolean(),
+});
+export type ItemOsInput = z.infer<typeof itemOsSchema>;
+
+/** Tudo o que o técnico edita na OS (salvo automaticamente, inclusive offline). */
+export const osSnapshotSchema = z.object({
+  tipo_atendimento: tipoAtendimento,
+  problema_relatado: texto(4000),
+  diagnostico: texto(4000),
+  servico_executado: texto(4000),
+  observacoes_tecnicas: texto(4000),
+  recomendacoes: texto(4000),
+  pendencias: z.boolean(),
+  pendencias_texto: texto(2000),
+  itens: z.array(itemOsSchema).max(100, "Máximo de 100 itens por OS."),
+});
+export type OsSnapshot = z.infer<typeof osSnapshotSchema>;
+
+const geoSchema = z
+  .object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) })
+  .nullable();
+
+export const assinaturaClienteSchema = z.object({
+  nome: z.string().trim().min(3, "Informe o nome de quem assina.").max(120),
+  documento: z.string().trim().max(30),
+  cargo: z.string().trim().max(60),
+  imagem: z.string().min(50, "Faça a assinatura no quadro."),
+  aceite: z.literal(true, { error: "É preciso concordar com o termo." }),
+  geo: geoSchema,
+});
+export type AssinaturaClienteInput = z.infer<typeof assinaturaClienteSchema>;
+
+export const assinaturaTecnicoSchema = z.object({
+  usarSalva: z.boolean(),
+  imagem: z.string().nullable(),
+  salvarComoPadrao: z.boolean(),
+});
+export type AssinaturaTecnicoInput = z.infer<typeof assinaturaTecnicoSchema>;
+
+export const osAvulsaSchema = z.object({
+  cliente_id: uuid("Selecione o cliente."),
+  unidade_id: z.string().refine((v) => v === "" || z.uuid().safeParse(v).success),
+  tecnico_id: uuid("Selecione o técnico."),
+  tipo_atendimento: tipoAtendimento,
+  problema_relatado: texto(4000),
+});
+export type OsAvulsaInput = z.infer<typeof osAvulsaSchema>;
+
+export const ajusteVisitaSchema = z
+  .object({ chegada: z.string().min(16, "Informe a chegada."), saida: z.string() })
+  .refine((v) => !v.saida || v.saida >= v.chegada, {
+    path: ["saida"],
+    message: "A saída deve ser depois da chegada.",
+  });
+
+export const avaliacaoSchema = z.object({
+  nota: z.number().int().min(1, "Escolha de 1 a 5 estrelas.").max(5),
+  comentario: z.string().trim().max(1000),
+});
+
 /** Motivo obrigatório para desativações (vai para a auditoria). */
 export const motivoSchema = z.string().trim().min(5, "Descreva o motivo (mínimo 5 caracteres).").max(500);

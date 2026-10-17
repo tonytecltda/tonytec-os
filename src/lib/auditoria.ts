@@ -11,7 +11,8 @@ export async function registrarAuditoria(params: {
   tabela: string;
   registroId: string | null;
   acao: string;
-  autorId: string;
+  /** Quem agiu (null quando não há usuário logado, ex.: assinatura remota por link). */
+  autorId: string | null;
   motivo?: string | null;
   antes?: unknown;
   depois?: unknown;

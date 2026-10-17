@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CalendarClock, UserRound } from "lucide-react";
+import { ArrowLeft, CalendarClock, Download, FileSignature, UserRound } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { AvaliacaoForm } from "@/components/chamados/avaliacao-form";
+import { OsStatusBadge } from "@/components/os/resumo-os";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { carregarAnexos, carregarChamado, carregarTimeline } from "@/lib/chamados";
@@ -24,7 +27,17 @@ export default async function PortalChamadoPage({ params }: PageProps<"/portal/c
 
   const chamado = await carregarChamado(id);
   if (!chamado) notFound();
-  const [eventos, anexos] = await Promise.all([carregarTimeline(id), carregarAnexos(id)]);
+  const supabase = await createClient();
+  const [eventos, anexos, { data: ordens }] = await Promise.all([
+    carregarTimeline(id),
+    carregarAnexos(id),
+    // RLS: o cliente vê as OS concluídas, assinadas ou aguardando assinatura.
+    supabase
+      .from("ordens_servico")
+      .select("id, numero, status, assinatura_recusada, pdf_path")
+      .eq("chamado_id", id)
+      .order("created_at", { ascending: false }),
+  ]);
   const encerrado = chamado.status === "resolvido" || chamado.status === "cancelado";
 
   return (
@@ -41,6 +54,69 @@ export default async function PortalChamadoPage({ params }: PageProps<"/portal/c
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="grid min-w-0 content-start gap-6">
+          {chamado.status === "resolvido" ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">
+                  {chamado.avaliacao_nota ? "Sua avaliação" : "Como foi o atendimento?"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {chamado.avaliacao_nota ? (
+                  <div className="grid gap-1 text-sm">
+                    <span
+                      className="text-xl text-amber-500"
+                      aria-label={`${chamado.avaliacao_nota} de 5 estrelas`}
+                    >
+                      {"★".repeat(chamado.avaliacao_nota)}
+                      <span className="text-muted-foreground/30">
+                        {"★".repeat(5 - chamado.avaliacao_nota)}
+                      </span>
+                    </span>
+                    {chamado.avaliacao_comentario ? (
+                      <p className="whitespace-pre-wrap">{chamado.avaliacao_comentario}</p>
+                    ) : null}
+                    <p className="text-muted-foreground text-xs">Obrigado pelo retorno!</p>
+                  </div>
+                ) : (
+                  <AvaliacaoForm chamadoId={id} />
+                )}
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {ordens?.length ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Ordens de serviço</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-2">
+                {ordens.map((o) => (
+                  <div key={o.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-3 text-sm">
+                    <Link href={`/portal/os/${o.id}`} className="font-medium hover:underline">
+                      OS {o.numero}
+                    </Link>
+                    <OsStatusBadge status={o.status} recusada={o.assinatura_recusada} />
+                    <span className="flex-1" />
+                    {o.status === "aguardando_assinatura" ? (
+                      <Button size="sm" asChild>
+                        <Link href={`/portal/os/${o.id}`}>
+                          <FileSignature /> Assinar
+                        </Link>
+                      </Button>
+                    ) : null}
+                    {o.pdf_path ? (
+                      <Button size="sm" variant="outline" asChild>
+                        <a href={`/api/os/${o.id}/pdf`}>
+                          <Download /> PDF
+                        </a>
+                      </Button>
+                    ) : null}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          ) : null}
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Descrição</CardTitle>

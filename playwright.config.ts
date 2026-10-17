@@ -9,6 +9,8 @@ export default defineConfig({
   testDir: "./e2e",
   timeout: 60_000,
   fullyParallel: false,
+  // Os cenários compartilham o mesmo banco e os mesmos usuários de demonstração: rodam em série.
+  workers: 1,
   retries: process.env.CI ? 1 : 0,
   reporter: [["list"]],
   use: {

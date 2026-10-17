@@ -15,9 +15,67 @@ import { Timeline } from "@/components/chamados/timeline";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { slaPrincipal } from "@/lib/sla";
+import { createClient } from "@/lib/supabase/server";
+import { IniciarAtendimentoButton } from "@/components/os/acoes-os";
+import { OsStatusBadge } from "@/components/os/resumo-os";
+import { Download, FileSignature } from "lucide-react";
 import { StatusAcoesTecnico } from "./status-acoes";
 
 export const metadata = { title: "Chamado" };
+
+/** Ações de atendimento conforme a OS do chamado (iniciar/continuar, assinar, PDF). */
+async function AtendimentoAcoes({
+  chamadoId,
+  status,
+}: {
+  chamadoId: string;
+  status: Parameters<typeof StatusAcoesTecnico>[0]["status"];
+}) {
+  const supabase = await createClient();
+  const { data: ordens } = await supabase
+    .from("ordens_servico")
+    .select("id, numero, status, finalizada_em, assinatura_recusada, pdf_path")
+    .eq("chamado_id", chamadoId)
+    .neq("status", "cancelada")
+    .order("created_at", { ascending: false });
+  const aberta = ordens?.find((o) => !o.finalizada_em);
+  const encerradas = (ordens ?? []).filter((o) => o.finalizada_em);
+  const encerrado = status === "resolvido" || status === "cancelado";
+
+  return (
+    <div className="grid gap-3">
+      {!encerrado ? (
+        aberta?.status === "aguardando_assinatura" ? (
+          <Button size="lg" asChild>
+            <Link href={`/tecnico/os/${aberta.id}/assinatura`}>
+              <FileSignature /> Coletar assinatura da OS {aberta.numero}
+            </Link>
+          </Button>
+        ) : (
+          <IniciarAtendimentoButton
+            chamadoId={chamadoId}
+            rotulo={aberta ? `Continuar atendimento (OS ${aberta.numero})` : "Iniciar atendimento"}
+          />
+        )
+      ) : null}
+      {!encerrado ? <StatusAcoesTecnico chamadoId={chamadoId} status={status} /> : null}
+      {encerradas.map((o) => (
+        <div key={o.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-3 text-sm">
+          <span className="font-medium">OS {o.numero}</span>
+          <OsStatusBadge status={o.status} recusada={o.assinatura_recusada} />
+          <span className="flex-1" />
+          {o.pdf_path ? (
+            <Button size="sm" variant="outline" asChild>
+              <a href={`/api/os/${o.id}/pdf`}>
+                <Download /> PDF
+              </a>
+            </Button>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default async function TecnicoChamadoPage({ params }: PageProps<"/tecnico/chamados/[id]">) {
   await requireRole("tecnico");
@@ -48,7 +106,7 @@ export default async function TecnicoChamadoPage({ params }: PageProps<"/tecnico
 
       <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
         <div className="grid min-w-0 content-start gap-4">
-          <StatusAcoesTecnico chamadoId={id} status={chamado.status} />
+          <AtendimentoAcoes chamadoId={id} status={chamado.status} />
 
           <Card>
             <CardHeader>

@@ -15,6 +15,9 @@ import { SlaPainel, UnidadeInfo } from "@/components/chamados/painel-info";
 import { Timeline } from "@/components/chamados/timeline";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { createClient } from "@/lib/supabase/server";
+import { AbrirOsChamadoButton } from "@/components/os/acoes-os";
+import { OsStatusBadge } from "@/components/os/resumo-os";
 import { GestaoChamadoForm } from "./gestao-form";
 
 export async function generateMetadata({ params }: PageProps<"/admin/chamados/[id]">) {
@@ -31,10 +34,16 @@ export default async function ChamadoAdminPage({ params }: PageProps<"/admin/cha
 
   const chamado = await carregarChamado(id);
   if (!chamado) notFound();
-  const [eventos, anexos, tecnicos] = await Promise.all([
+  const supabase = await createClient();
+  const [eventos, anexos, tecnicos, { data: ordens }] = await Promise.all([
     carregarTimeline(id),
     carregarAnexos(id),
     opcoesTecnicos(),
+    supabase
+      .from("ordens_servico")
+      .select("id, numero, status, finalizada_em, assinatura_recusada")
+      .eq("chamado_id", id)
+      .order("created_at", { ascending: false }),
   ]);
 
   // Técnico atual inativo continua aparecendo na lista para não "sumir" do formulário.
@@ -127,11 +136,42 @@ export default async function ChamadoAdminPage({ params }: PageProps<"/admin/cha
                   motivo: "",
                 }}
               />
-              <Button variant="outline" className="mt-3 w-full" disabled title="Disponível na Fase 3">
-                <FileSignature /> Abrir ordem de serviço (Fase 3)
-              </Button>
+              <div className="mt-3 grid gap-2">
+                {!ordens?.some((o) => !o.finalizada_em && o.status !== "cancelada") &&
+                chamado.status !== "cancelado" ? (
+                  <AbrirOsChamadoButton chamadoId={id} />
+                ) : null}
+                {(ordens ?? []).map((o) => (
+                  <Link
+                    key={o.id}
+                    href={`/admin/os/${o.id}`}
+                    className="hover:bg-muted/50 flex items-center gap-2 rounded-lg border p-2 text-sm"
+                  >
+                    <FileSignature className="text-primary size-4" />
+                    <span className="font-medium">OS {o.numero}</span>
+                    <span className="flex-1" />
+                    <OsStatusBadge status={o.status} recusada={o.assinatura_recusada} />
+                  </Link>
+                ))}
+              </div>
             </CardContent>
           </Card>
+          {chamado.avaliacao_nota ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Avaliação do cliente</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-1 text-sm">
+                <span className="text-amber-500" aria-label={`${chamado.avaliacao_nota} de 5 estrelas`}>
+                  {"★".repeat(chamado.avaliacao_nota)}
+                  <span className="text-muted-foreground/40">{"★".repeat(5 - chamado.avaliacao_nota)}</span>
+                </span>
+                {chamado.avaliacao_comentario ? (
+                  <p className="whitespace-pre-wrap">{chamado.avaliacao_comentario}</p>
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
 
           <Card>
             <CardHeader>

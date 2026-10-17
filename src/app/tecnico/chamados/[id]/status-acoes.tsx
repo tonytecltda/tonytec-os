@@ -11,8 +11,8 @@ import { moverStatusChamado } from "@/actions/chamados";
 
 type Status = Database["public"]["Enums"]["chamado_status"];
 
+// "Em atendimento" vem do botão "Iniciar atendimento" (que também abre a OS e a visita).
 const ACOES: { status: Status; label: string; icon: typeof Wrench }[] = [
-  { status: "em_atendimento", label: "Em atendimento", icon: Wrench },
   { status: "aguardando_peca", label: "Aguardando peça", icon: PackageSearch },
   { status: "aguardando_cliente", label: "Aguardando cliente", icon: Hourglass },
 ];
@@ -24,11 +24,11 @@ export function StatusAcoesTecnico({ chamadoId, status }: { chamadoId: string; s
   if (status === "resolvido" || status === "cancelado") return null;
 
   return (
-    <div className="grid gap-2 sm:grid-cols-3">
+    <div className="grid gap-2 sm:grid-cols-2">
       {ACOES.filter((a) => a.status !== status).map((a) => (
         <Button
           key={a.status}
-          variant={a.status === "em_atendimento" ? "default" : "outline"}
+          variant="outline"
           size="lg"
           disabled={pending}
           onClick={() =>

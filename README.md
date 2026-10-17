@@ -6,7 +6,7 @@ Sistema de gestão de chamados, visitas técnicas, cobrança e ordens de serviç
 - **Stack:** Next.js 16 (App Router) + TypeScript · Tailwind CSS 4 + shadcn/ui · Supabase (Postgres, Auth, Storage, RLS) · Vercel
 - **Perfis:** `admin` (`/admin`), `tecnico` (`/tecnico`, mobile-first), `cliente` (`/portal`)
 
-> Status: **Fase 2 — Chamados** concluída (abertura pelo portal e pela Tonytec com anexos, Kanban,
+> Status: **Fase 3 — OS e assinatura** concluída (atendimento no celular, horas, itens, fotos, assinatura na tela ou por link, PDF e bloqueio). Antes: **Fase 2 — Chamados** concluída (abertura pelo portal e pela Tonytec com anexos, Kanban,
 > atribuição, agendamento, comentários públicos/internos, histórico e SLA). Fases anteriores: cadastros e
 > fundação. Veja [docs/PREMISSAS.md](docs/PREMISSAS.md) para decisões e premissas.
 
@@ -85,7 +85,12 @@ O cadastro público está **desativado**: usuários técnicos e de cliente são 
    “Agendado”).
 3. **Atendimento:** o técnico vê o chamado em _Meu dia_, abre a rota no Google Maps, liga para o local,
    tira fotos e registra mensagens/notas internas. **Notas internas** nunca aparecem para o cliente.
-4. **Encerramento:** “Resolvido” exige OS assinada (Fase 3); o banco recusa a mudança antes disso.
+4. **Ordem de serviço:** o técnico toca em **Iniciar atendimento** (abre a OS e registra a chegada),
+   preenche diagnóstico/serviço/itens/fotos (salvo automaticamente, mesmo sem sinal), **Registra a saída**
+   e toca em **Concluir e assinar**. Técnico e cliente assinam na tela, o cliente assina depois por **link**
+   (WhatsApp/e-mail) ou pelo portal, ou o técnico registra a **recusa** com motivo.
+5. **Encerramento:** ao assinar, o sistema grava o hash, bloqueia a OS, marca o chamado como resolvido,
+   gera o PDF e (se o Resend estiver configurado) envia ao cliente. Só o admin reabre, com motivo.
 
 Anexos (fotos, vídeos curtos e PDF, até 20 MB cada, 20 por chamado) vão direto do navegador para o
 Storage por URL assinada; fotos grandes são reduzidas no próprio celular antes do envio.
@@ -96,7 +101,7 @@ Storage por URL assinada; fotos grandes são reduzidas no próprio celular antes
 # .env.local: SEED_DEMO=true e SEED_DEMO_PASSWORD=<senha>
 npm run seed:demo    # 2 clientes, unidades, contrato, 2 técnicos, 2 usuários de portal, chamados
 npm run test:unit    # validações (CPF/CNPJ alfanumérico, datas, contratos)
-npm run test:rls     # isolamento entre clientes e permissões por perfil (38 verificações)
+npm run test:rls     # isolamento entre clientes e permissões por perfil (63 verificações)
 npm run build && npm run test:e2e   # e2e: login, cadastro completo (Fase 1), fluxo de chamados (Fase 2), 375 px
 ```
 

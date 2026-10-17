@@ -98,6 +98,36 @@ export const OS_STATUS: Record<Enums["os_status"], string> = {
   cancelada: "Cancelada",
 };
 
+export const OS_STATUS_TOM: Record<Enums["os_status"], Tom> = {
+  rascunho: "cinza",
+  em_execucao: "laranja",
+  concluida: "amarelo",
+  aguardando_assinatura: "violeta",
+  assinada: "verde",
+  cancelada: "cinza",
+};
+
+/** Rótulo do status considerando a recusa de assinatura (OS "concluída" = encerrada sem assinatura). */
+export function rotuloStatusOs(status: Enums["os_status"], recusada: boolean) {
+  if (status === "concluida" && recusada) return "Encerrada (cliente não assinou)";
+  return OS_STATUS[status];
+}
+
+export const TIPO_ATENDIMENTO: Record<Enums["os_tipo_atendimento"], string> = {
+  corretivo: "Corretivo",
+  preventivo: "Preventivo",
+  instalacao: "Instalação",
+  vistoria: "Vistoria / orçamento",
+  outro: "Outro",
+};
+
+export const ANEXO_OS_TIPO: Record<Enums["os_anexo_tipo"], string> = {
+  foto_antes: "Antes",
+  foto_depois: "Depois",
+  documento: "Documento",
+  outro: "Outro",
+};
+
 export const UFS = [
   "AC",
   "AL",

@@ -579,6 +579,7 @@ export type Database = {
           data_fim: string | null
           data_inicio: string | null
           diagnostico: string | null
+          finalizada_em: string | null
           hash_conteudo: string | null
           id: string
           motivo_recusa: string | null
@@ -607,6 +608,7 @@ export type Database = {
           data_fim?: string | null
           data_inicio?: string | null
           diagnostico?: string | null
+          finalizada_em?: string | null
           hash_conteudo?: string | null
           id?: string
           motivo_recusa?: string | null
@@ -635,6 +637,7 @@ export type Database = {
           data_fim?: string | null
           data_inicio?: string | null
           diagnostico?: string | null
+          finalizada_em?: string | null
           hash_conteudo?: string | null
           id?: string
           motivo_recusa?: string | null
@@ -743,6 +746,7 @@ export type Database = {
           expira_em: string
           id: string
           os_id: string
+          tentativas: number
           token_hash: string
           usado_em: string | null
         }
@@ -753,6 +757,7 @@ export type Database = {
           expira_em: string
           id?: string
           os_id: string
+          tentativas?: number
           token_hash: string
           usado_em?: string | null
         }
@@ -763,6 +768,7 @@ export type Database = {
           expira_em?: string
           id?: string
           os_id?: string
+          tentativas?: number
           token_hash?: string
           usado_em?: string | null
         }

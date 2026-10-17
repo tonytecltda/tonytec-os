@@ -78,6 +78,8 @@ test.describe("Fase 2 — chamados", () => {
       await sa.storage.from("chamado-anexos").remove(anexos.map((a) => a.storage_path));
       await sa.from("chamado_anexos").delete().eq("chamado_id", chamadoId);
     }
+    // OS aberta pelo "Iniciar atendimento": não pode ser apagada, então é cancelada e arquivada.
+    await sa.from("ordens_servico").update({ ativo: false, status: "cancelada" }).eq("chamado_id", chamadoId);
     await sa.from("chamados").update({ ativo: false }).eq("id", chamadoId);
   });
 
@@ -146,8 +148,10 @@ test.describe("Fase 2 — chamados", () => {
     await expect(t.getByText("Nota interna E2E: levar câmera reserva")).toBeVisible();
     await expect(t.getByText("Mensagem do cliente E2E")).toBeVisible();
     await expect(t.getByAltText("foto-teste.png")).toBeVisible();
-    await t.getByRole("button", { name: "Em atendimento" }).click();
-    await expect(t.getByText("Status: Em atendimento.")).toBeVisible();
+    // "Iniciar atendimento" (Fase 3) abre a OS, registra a chegada e põe o chamado em atendimento
+    await t.getByRole("button", { name: "Iniciar atendimento" }).click();
+    await expect(t).toHaveURL(/\/tecnico\/os\/[0-9a-f-]{36}$/, { timeout: 20_000 });
+    await expect(t.getByText(/Em atendimento desde/)).toBeVisible();
 
     // 4) Cliente vê a resposta e o técnico, mas nunca a nota interna
     await p.reload();

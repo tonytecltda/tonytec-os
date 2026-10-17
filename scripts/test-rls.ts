@@ -137,6 +137,147 @@ async function main() {
     check("NÃO cancela chamado", !!e5, e5?.message);
   }
 
+  // ------------------------------------------------------- ordem de serviço
+  console.log("\nOrdem de serviço (ciclo de vida)");
+  {
+    const { data: tec } = await admin
+      .from("profiles")
+      .select("id")
+      .eq("email", DEMO.users.tecnico.email)
+      .single();
+    const { data: os, error: osErro } = await admin
+      .from("ordens_servico")
+      .insert({
+        cliente_id: a.id,
+        tecnico_id: tec!.id,
+        status: "em_execucao",
+        problema_relatado: "[RLS] teste",
+      })
+      .select("id")
+      .single();
+    if (osErro || !os) throw new Error(`OS de teste: ${osErro?.message}`);
+    const ca2 = await login(DEMO.users.clienteA.email);
+    const t1 = await login(DEMO.users.tecnico.email);
+    const t2b = await login(DEMO.users.tecnico2.email);
+    const cb2 = await login(DEMO.users.clienteB.email);
+
+    const veOs = async (c: typeof ca2) =>
+      ((await c.from("ordens_servico").select("id").eq("id", os.id)).data?.length ?? 0) === 1;
+    check("em execução: técnico responsável vê", await veOs(t1));
+    check("em execução: outro técnico NÃO vê", !(await veOs(t2b)));
+    check("em execução: cliente NÃO vê (rascunho do técnico)", !(await veOs(ca2)));
+
+    const { error: u1 } = await t1.from("ordens_servico").update({ cliente_id: b.id }).eq("id", os.id);
+    check("técnico NÃO troca o cliente da OS", !!u1, u1?.message);
+    const { error: u2 } = await t1.from("ordens_servico").update({ status: "assinada" }).eq("id", os.id);
+    check("técnico NÃO marca a OS como assinada", !!u2, u2?.message);
+    const { error: u3 } = await t1.from("ordens_servico").update({ diagnostico: "ok" }).eq("id", os.id);
+    check("técnico edita a OS em execução", !u3, u3?.message);
+
+    // Visita: o técnico registra chegada/saída, mas não mexe em cobrança
+    const { data: vis, error: v1 } = await t1
+      .from("os_visitas")
+      .insert({ os_id: os.id })
+      .select("id")
+      .single();
+    check("técnico registra a chegada", !v1 && !!vis, v1?.message);
+    const { error: v2 } = await t1
+      .from("os_visitas")
+      .update({ data_hora_saida: new Date().toISOString() })
+      .eq("id", vis!.id);
+    check("técnico registra a saída (horas calculadas)", !v2, v2?.message);
+    const { data: visDb } = await admin
+      .from("os_visitas")
+      .select("horas_trabalhadas")
+      .eq("id", vis!.id)
+      .single();
+    check("horas trabalhadas foram calculadas", visDb?.horas_trabalhadas != null, visDb);
+    const { error: v3 } = await t1.from("os_visitas").update({ cobranca_tipo: "cortesia" }).eq("id", vis!.id);
+    check("técnico NÃO altera a cobrança da visita", !!v3, v3?.message);
+    const { data: visCli } = await ca2.from("os_visitas").select("id").eq("os_id", os.id);
+    check("cliente NÃO lê visitas", visCli?.length === 0, visCli);
+
+    // Aguardando assinatura: cliente passa a ver; técnico fica congelado
+    await admin.from("ordens_servico").update({ status: "aguardando_assinatura" }).eq("id", os.id);
+    check("aguardando assinatura: cliente A vê", await veOs(ca2));
+    check("aguardando assinatura: cliente B NÃO vê", !(await veOs(cb2)));
+    const { error: u4 } = await t1.from("ordens_servico").update({ diagnostico: "mudei" }).eq("id", os.id);
+    check("aguardando assinatura: técnico NÃO edita", !!u4, u4?.message);
+    const { error: i1 } = await t1
+      .from("os_itens")
+      .insert({ os_id: os.id, descricao: "x", quantidade: 1, valor_unitario: 1 });
+    check("aguardando assinatura: técnico NÃO inclui itens", !!i1, i1?.message);
+    const { error: s1 } = await ca2.from("os_assinaturas").insert({
+      os_id: os.id,
+      tipo: "cliente",
+      nome_signatario: "x",
+      imagem_path: "x",
+      hash_documento: "x",
+    });
+    check("cliente NÃO grava assinatura direto (só pelo servidor)", !!s1, s1?.message);
+
+    // Encerrada: imutável para todos, menos o servidor/admin nos campos permitidos
+    await admin
+      .from("ordens_servico")
+      .update({ status: "assinada", finalizada_em: new Date().toISOString() })
+      .eq("id", os.id);
+    // A RLS filtra a linha (0 linhas afetadas, sem erro): o que importa é o dado não mudar.
+    await t1.from("ordens_servico").update({ diagnostico: "tarde demais" }).eq("id", os.id);
+    const { data: intacta } = await admin
+      .from("ordens_servico")
+      .select("diagnostico")
+      .eq("id", os.id)
+      .single();
+    check("OS encerrada: técnico NÃO edita", intacta?.diagnostico === "ok", intacta);
+    const { error: ad } = await admin
+      .from("ordens_servico")
+      .update({ diagnostico: "admin tenta" })
+      .eq("id", os.id);
+    check("OS encerrada: nem o servidor altera o conteúdo", !!ad, ad?.message);
+    const { error: ad2 } = await admin
+      .from("os_itens")
+      .insert({ os_id: os.id, descricao: "x", quantidade: 1, valor_unitario: 1 });
+    check("OS encerrada: não aceita novos itens", !!ad2, ad2?.message);
+    const { error: ad3 } = await admin.from("ordens_servico").delete().eq("id", os.id);
+    check("OS não pode ser apagada", !!ad3, ad3?.message);
+
+    // Reabertura (só admin, com motivo): usa a função com o login do admin
+    const adm = anonClient();
+    const { error: l } = await adm.auth.signInWithPassword({
+      email: requireEnv("SEED_ADMIN_EMAIL"),
+      password: requireEnv("SEED_ADMIN_PASSWORD"),
+    });
+    if (l) throw new Error(`login admin: ${l.message}`);
+    const { error: r1 } = await t1.rpc("reabrir_os", { p_os_id: os.id, p_motivo: "tentativa do técnico" });
+    check("técnico NÃO reabre OS", !!r1, r1?.message);
+    const { error: r2 } = await adm.rpc("reabrir_os", { p_os_id: os.id, p_motivo: "ab" });
+    check("reabrir exige motivo", !!r2, r2?.message);
+    const { error: r3 } = await adm.rpc("reabrir_os", {
+      p_os_id: os.id,
+      p_motivo: "Correção solicitada (teste RLS)",
+    });
+    check("admin reabre a OS com motivo", !r3, r3?.message);
+    const { data: reab } = await admin
+      .from("ordens_servico")
+      .select("status, finalizada_em")
+      .eq("id", os.id)
+      .single();
+    check(
+      "OS reaberta volta para execução",
+      reab?.status === "em_execucao" && reab.finalizada_em === null,
+      reab,
+    );
+    const { count: audit } = await admin
+      .from("auditoria")
+      .select("id", { count: "exact", head: true })
+      .eq("registro_id", os.id)
+      .eq("acao", "reabertura_os");
+    check("reabertura ficou na auditoria", (audit ?? 0) >= 1);
+
+    // Limpeza: OS não pode ser apagada, então é arquivada
+    await admin.from("ordens_servico").update({ ativo: false, status: "cancelada" }).eq("id", os.id);
+  }
+
   console.log("\nSegundo técnico (sem chamados)");
   const t2 = await login(DEMO.users.tecnico2.email);
   {

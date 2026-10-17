@@ -7,6 +7,7 @@ import {
   FileText,
   History,
   LayoutDashboard,
+  PenLine,
   PlusCircle,
   Receipt,
   ScrollText,
@@ -34,7 +35,7 @@ export const NAV: Record<Area, { titulo: string; itens: NavItem[] }> = {
     itens: [
       { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
       { href: "/admin/chamados", label: "Chamados", icon: ClipboardList },
-      { href: "/admin/os", label: "Ordens de Serviço", icon: FileSignature, fase: 3 },
+      { href: "/admin/os", label: "Ordens de Serviço", icon: FileSignature },
       { href: "/admin/agenda", label: "Agenda", icon: CalendarDays, fase: 5 },
       { href: "/admin/clientes", label: "Clientes", icon: Users },
       { href: "/admin/contratos", label: "Contratos", icon: ScrollText },
@@ -50,7 +51,8 @@ export const NAV: Record<Area, { titulo: string; itens: NavItem[] }> = {
     titulo: "Técnico",
     itens: [
       { href: "/tecnico", label: "Meu dia", icon: Sun },
-      { href: "/tecnico/historico", label: "Histórico", icon: History, fase: 3 },
+      { href: "/tecnico/historico", label: "Histórico", icon: History },
+      { href: "/tecnico/assinatura", label: "Minha assinatura", icon: PenLine },
     ],
   },
   portal: {
@@ -59,7 +61,7 @@ export const NAV: Record<Area, { titulo: string; itens: NavItem[] }> = {
       { href: "/portal", label: "Início", icon: LayoutDashboard },
       { href: "/portal/chamados/novo", label: "Abrir chamado", icon: PlusCircle },
       { href: "/portal/chamados", label: "Meus chamados", icon: ClipboardList },
-      { href: "/portal/os", label: "Ordens de Serviço", icon: FileText, fase: 3 },
+      { href: "/portal/os", label: "Ordens de Serviço", icon: FileText },
       { href: "/portal/contrato", label: "Contrato", icon: ScrollText },
     ],
   },
