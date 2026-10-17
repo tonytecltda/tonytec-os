@@ -83,6 +83,19 @@ async function main() {
     const { error: e5 } = await ca.from("clientes").update({ razao_social: "hack" }).eq("id", a.id).select();
     const { data: nomeA } = await admin.from("clientes").select("razao_social").eq("id", a.id).single();
     check("NÃO edita cadastro do cliente", nomeA?.razao_social === DEMO.clienteA.razao_social, e5?.message);
+    const { error: e6 } = await ca.from("chamados").update({ status: "cancelado" }).eq("id", chA!.id);
+    check("NÃO muda o status do chamado", !!e6, e6?.message);
+    const { data: anexB } = await ca.from("chamado_anexos").select("id").eq("chamado_id", chB!.id);
+    check("NÃO vê anexos do cliente B", anexB?.length === 0, anexB);
+    // Storage: sem URL assinada emitida pelo servidor, o cliente não lê nem envia arquivos.
+    const { data: lista } = await ca.storage.from("chamado-anexos").list(a.id);
+    check("NÃO lista arquivos do Storage diretamente", !lista?.length, lista);
+    const { error: e7 } = await ca.storage
+      .from("chamado-anexos")
+      .upload(`${a.id}/${chA!.id}/invasao.txt`, new Blob(["x"], { type: "text/plain" }));
+    check("NÃO envia arquivo direto ao Storage", !!e7, e7?.message);
+    const { error: e8 } = await ca.storage.from("chamado-anexos").createSignedUploadUrl(`${b.id}/x/y.png`);
+    check("NÃO gera URL de upload sozinho", !!e8, e8?.message);
   }
 
   // -------------------------------------------------------------- cliente B
@@ -118,6 +131,10 @@ async function main() {
     check("NÃO resolve chamado sem OS assinada", !!e2, e2?.message);
     const { error: e3 } = await tc.from("clientes").insert({ razao_social: "x" });
     check("NÃO cria cliente", !!e3, e3?.message);
+    const { error: e4 } = await tc.from("chamados").update({ tecnico_id: null }).eq("id", chA!.id);
+    check("NÃO troca o técnico responsável", !!e4, e4?.message);
+    const { error: e5 } = await tc.from("chamados").update({ status: "cancelado" }).eq("id", chA!.id);
+    check("NÃO cancela chamado", !!e5, e5?.message);
   }
 
   console.log("\nSegundo técnico (sem chamados)");

@@ -33,3 +33,9 @@ test("situação do contrato", () => {
   );
   assert.equal(situacaoContrato({ status: "ativo", data_inicio: "2999-01-01", data_fim: null }).tom, "azul");
 });
+
+test("ISO -> datetime-local em Brasília", async () => {
+  const { paraInputDataHora } = await import("./format");
+  assert.equal(paraInputDataHora("2026-10-20T17:30:00Z"), "2026-10-20T14:30");
+  assert.equal(paraInputDataHora(null), "");
+});

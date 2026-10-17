@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-type Tom = "verde" | "amarelo" | "laranja" | "vermelho" | "azul" | "cinza";
+export type Tom = "verde" | "amarelo" | "laranja" | "vermelho" | "azul" | "violeta" | "cinza";
 
 const TONS: Record<Tom, string> = {
   verde: "bg-emerald-500/12 text-emerald-700 dark:text-emerald-400",
@@ -9,6 +9,7 @@ const TONS: Record<Tom, string> = {
   laranja: "bg-orange-500/15 text-orange-700 dark:text-orange-400",
   vermelho: "bg-red-500/12 text-red-700 dark:text-red-400",
   azul: "bg-primary/12 text-primary",
+  violeta: "bg-violet-500/12 text-violet-700 dark:text-violet-400",
   cinza: "bg-muted text-muted-foreground",
 };
 

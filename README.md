@@ -6,8 +6,9 @@ Sistema de gestão de chamados, visitas técnicas, cobrança e ordens de serviç
 - **Stack:** Next.js 16 (App Router) + TypeScript · Tailwind CSS 4 + shadcn/ui · Supabase (Postgres, Auth, Storage, RLS) · Vercel
 - **Perfis:** `admin` (`/admin`), `tecnico` (`/tecnico`, mobile-first), `cliente` (`/portal`)
 
-> Status: **Fase 1 — Cadastros** concluída (clientes, unidades, usuários do portal, técnicos, contratos,
-> catálogos e configurações). Veja [docs/PREMISSAS.md](docs/PREMISSAS.md) para decisões e premissas.
+> Status: **Fase 2 — Chamados** concluída (abertura pelo portal e pela Tonytec com anexos, Kanban,
+> atribuição, agendamento, comentários públicos/internos, histórico e SLA). Fases anteriores: cadastros e
+> fundação. Veja [docs/PREMISSAS.md](docs/PREMISSAS.md) para decisões e premissas.
 
 ---
 
@@ -74,14 +75,29 @@ O cadastro público está **desativado**: usuários técnicos e de cliente são 
 - O botão “Continuar” existe de propósito: pré-visualizações de link (WhatsApp, antivírus de e-mail)
   abrem o endereço sozinhas e, sem ele, gastariam o link antes do usuário.
 
+### Fluxo de chamados
+
+1. **Abertura:** o cliente abre pelo portal (_Abrir chamado_) ou a Tonytec registra em _Chamados → Novo
+   chamado_ (telefone/WhatsApp). O banco gera o protocolo (`CH-AAAA-000001`) e os prazos de SLA (horas
+   úteis; prazos do contrato vigente ou padrão por prioridade).
+2. **Triagem:** no **Kanban** (_Chamados_) arraste o cartão entre colunas, ou abra o chamado e use
+   _Gestão_ para status, prioridade, técnico e agendamento (agendar um chamado aberto muda o status para
+   “Agendado”).
+3. **Atendimento:** o técnico vê o chamado em _Meu dia_, abre a rota no Google Maps, liga para o local,
+   tira fotos e registra mensagens/notas internas. **Notas internas** nunca aparecem para o cliente.
+4. **Encerramento:** “Resolvido” exige OS assinada (Fase 3); o banco recusa a mudança antes disso.
+
+Anexos (fotos, vídeos curtos e PDF, até 20 MB cada, 20 por chamado) vão direto do navegador para o
+Storage por URL assinada; fotos grandes são reduzidas no próprio celular antes do envio.
+
 ## 4. Dados de demonstração e testes
 
 ```bash
 # .env.local: SEED_DEMO=true e SEED_DEMO_PASSWORD=<senha>
 npm run seed:demo    # 2 clientes, unidades, contrato, 2 técnicos, 2 usuários de portal, chamados
 npm run test:unit    # validações (CPF/CNPJ alfanumérico, datas, contratos)
-npm run test:rls     # isolamento entre clientes e permissões por perfil (31 verificações)
-npm run build && npm run test:e2e   # e2e: login dos 3 perfis, cadastro completo (Fase 1), 375 px
+npm run test:rls     # isolamento entre clientes e permissões por perfil (38 verificações)
+npm run build && npm run test:e2e   # e2e: login, cadastro completo (Fase 1), fluxo de chamados (Fase 2), 375 px
 ```
 
 > Os testes e2e rodam contra o banco configurado no `.env.local` e apagam os dados `[E2E]` que criam

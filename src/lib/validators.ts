@@ -137,5 +137,62 @@ export const itemCatalogoSchema = z.object({
 });
 export type ItemCatalogoInput = z.infer<typeof itemCatalogoSchema>;
 
+// ---------------------------------------------------------------- chamados
+const prioridade = z.enum(["baixa", "media", "alta", "urgente"]);
+const statusChamado = z.enum([
+  "aberto",
+  "triagem",
+  "agendado",
+  "em_atendimento",
+  "aguardando_cliente",
+  "aguardando_peca",
+  "resolvido",
+  "cancelado",
+]);
+const dataHoraOpcional = z
+  .string()
+  .refine((v) => v === "" || !Number.isNaN(Date.parse(v)), "Data/hora inválida.");
+
+/** Abertura pelo portal do cliente (cliente_id, origem e status são definidos pelo servidor). */
+export const chamadoPortalSchema = z.object({
+  unidade_id: uuid("Selecione a unidade."),
+  categoria_id: uuid("Selecione a categoria."),
+  tipo_problema_id: z.string().refine((v) => v === "" || z.uuid().safeParse(v).success),
+  titulo: obrigatorio("Resuma o problema em poucas palavras.", 120),
+  descricao: z.string().trim().min(10, "Descreva o problema (mínimo 10 caracteres).").max(4000),
+  prioridade,
+  telefone_contato: telefone,
+});
+export type ChamadoPortalInput = z.infer<typeof chamadoPortalSchema>;
+
+/** Abertura pela Tonytec (telefone, WhatsApp ou interna). */
+export const chamadoAdminSchema = chamadoPortalSchema.extend({
+  cliente_id: uuid("Selecione o cliente."),
+  unidade_id: z.string().refine((v) => v === "" || z.uuid().safeParse(v).success),
+  descricao: texto(4000),
+  origem: z.enum(["admin", "telefone", "whatsapp"]),
+  tecnico_id: z.string().refine((v) => v === "" || z.uuid().safeParse(v).success),
+  data_agendada: dataHoraOpcional,
+});
+export type ChamadoAdminInput = z.infer<typeof chamadoAdminSchema>;
+
+/** Gestão do chamado pelo admin (status, prioridade, técnico, agenda). */
+export const gestaoChamadoSchema = z.object({
+  status: statusChamado,
+  prioridade,
+  tecnico_id: z.string().refine((v) => v === "" || z.uuid().safeParse(v).success),
+  data_agendada: dataHoraOpcional,
+  motivo: z.string().trim().max(500),
+});
+export type GestaoChamadoInput = z.infer<typeof gestaoChamadoSchema>;
+
+export const comentarioSchema = z.object({
+  mensagem: z.string().trim().min(1, "Escreva a mensagem.").max(4000, "Máximo de 4000 caracteres."),
+  interno: z.boolean(),
+});
+export type ComentarioInput = z.infer<typeof comentarioSchema>;
+
+export const STATUS_CHAMADO = statusChamado.options;
+
 /** Motivo obrigatório para desativações (vai para a auditoria). */
 export const motivoSchema = z.string().trim().min(5, "Descreva o motivo (mínimo 5 caracteres).").max(500);

@@ -15,21 +15,29 @@ import { UserMenu } from "./user-menu";
 type ShellUser = { nome: string; email: string; papel: string };
 type ShellEmpresa = { nome: string; logoUrl: string | null };
 
-function isActive(pathname: string, item: NavItem, raiz: string) {
+function corresponde(pathname: string, item: NavItem, raiz: string) {
   if (item.href === raiz) return pathname === raiz;
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
+}
+
+/** Item ativo = o de rota mais específica (ex.: "Abrir chamado" e não "Meus chamados"). */
+function hrefAtivo(pathname: string, itens: NavItem[], raiz: string) {
+  return itens
+    .filter((i) => !i.fase && corresponde(pathname, i, raiz))
+    .sort((a, b) => b.href.length - a.href.length)[0]?.href;
 }
 
 function NavLinks({ area, onNavigate }: { area: Area; onNavigate?: () => void }) {
   const pathname = usePathname();
   const { itens } = NAV[area];
   const raiz = itens[0].href;
+  const ativoHref = hrefAtivo(pathname, itens, raiz);
 
   return (
     <nav className="grid gap-0.5" aria-label="Navegação principal">
       {itens.map((item) => {
         const Icon = item.icon;
-        const ativo = isActive(pathname, item, raiz);
+        const ativo = item.href === ativoHref;
         const base =
           "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring";
 

@@ -46,6 +46,49 @@ export const CHAMADO_STATUS: Record<Enums["chamado_status"], string> = {
   cancelado: "Cancelado",
 };
 
+export const ORIGEM: Record<Enums["chamado_origem"], string> = {
+  portal: "Portal do cliente",
+  admin: "Interno",
+  telefone: "Telefone",
+  whatsapp: "WhatsApp",
+};
+
+type Tom = "verde" | "amarelo" | "laranja" | "vermelho" | "azul" | "violeta" | "cinza";
+
+export const STATUS_TOM: Record<Enums["chamado_status"], Tom> = {
+  aberto: "azul",
+  triagem: "violeta",
+  agendado: "violeta",
+  em_atendimento: "laranja",
+  aguardando_cliente: "amarelo",
+  aguardando_peca: "amarelo",
+  resolvido: "verde",
+  cancelado: "cinza",
+};
+
+export const PRIORIDADE_TOM: Record<Enums["chamado_prioridade"], Tom> = {
+  baixa: "cinza",
+  media: "azul",
+  alta: "laranja",
+  urgente: "vermelho",
+};
+
+/** Ajuda o cliente a escolher a prioridade certa. */
+export const PRIORIDADE_DICA: Record<Enums["chamado_prioridade"], string> = {
+  baixa: "Pode esperar (ajuste, dúvida, melhoria)",
+  media: "Atrapalha, mas o sistema ainda funciona",
+  alta: "Equipamento importante parado",
+  urgente: "Segurança comprometida ou tudo parado",
+};
+
+/** Ordem de urgência (para ordenar listas). */
+export const PRIORIDADE_PESO: Record<Enums["chamado_prioridade"], number> = {
+  urgente: 0,
+  alta: 1,
+  media: 2,
+  baixa: 3,
+};
+
 export const OS_STATUS: Record<Enums["os_status"], string> = {
   rascunho: "Rascunho",
   em_execucao: "Em execução",

@@ -54,3 +54,24 @@ export const hojeISO = () => new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).
 export function diasAte(dataIso: string) {
   return Math.round((Date.parse(`${dataIso}T00:00:00Z`) - Date.parse(`${hojeISO()}T00:00:00Z`)) / 86_400_000);
 }
+
+/** ISO -> valor de <input type="datetime-local"> no horário de Brasília ("2026-10-20T14:30"). */
+export function paraInputDataHora(iso: string | null | undefined) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const p = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(d);
+  return p.replace(" ", "T");
+}
+
+/** Instante de N dias atrás em ISO (filtros por período no servidor). */
+export function isoDiasAtras(dias: number) {
+  return new Date(Date.now() - dias * 86_400_000).toISOString();
+}

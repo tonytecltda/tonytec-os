@@ -2,13 +2,16 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ClienteCombobox, type OpcaoCliente } from "@/components/forms/cliente-combobox";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 
 /** Atualiza um search param mantendo os outros e voltando para a página 1. */
-function useSetParam() {
+export function useSetParam() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -91,4 +94,71 @@ export function FilterSelect({
       </SelectContent>
     </Select>
   );
+}
+
+/** Filtro por cliente com busca (?cliente=). */
+export function ClienteFilter({ clientes, param = "cliente" }: { clientes: OpcaoCliente[]; param?: string }) {
+  const { setParam, searchParams } = useSetParam();
+  const atual = searchParams.get(param) ?? "";
+  return (
+    <div className="flex w-full items-center gap-1 sm:w-64">
+      <ClienteCombobox clientes={clientes} value={atual} onChange={(id) => setParam(param, id)} />
+      {atual ? (
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Limpar filtro de cliente"
+          onClick={() => setParam(param, "")}
+        >
+          <X />
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
+/** Período (?de=aaaa-mm-dd&ate=aaaa-mm-dd). */
+export function PeriodoFilter() {
+  const { searchParams, setParams } = useSetParams();
+  const de = searchParams.get("de") ?? "";
+  const ate = searchParams.get("ate") ?? "";
+  return (
+    <div className="flex w-full items-center gap-1 sm:w-auto">
+      <Input
+        type="date"
+        value={de}
+        max={ate || undefined}
+        onChange={(e) => setParams({ de: e.target.value })}
+        aria-label="Abertos a partir de"
+        className="w-full sm:w-36"
+      />
+      <span className="text-muted-foreground text-xs">até</span>
+      <Input
+        type="date"
+        value={ate}
+        min={de || undefined}
+        onChange={(e) => setParams({ ate: e.target.value })}
+        aria-label="Abertos até"
+        className="w-full sm:w-36"
+      />
+    </div>
+  );
+}
+
+/** Variante que altera vários parâmetros de uma vez. */
+function useSetParams() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const setParams = (valores: Record<string, string>) => {
+    const sp = new URLSearchParams(searchParams.toString());
+    for (const [k, v] of Object.entries(valores)) {
+      if (v) sp.set(k, v);
+      else sp.delete(k);
+    }
+    sp.delete("page");
+    const qs = sp.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  };
+  return { searchParams, setParams };
 }
