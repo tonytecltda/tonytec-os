@@ -196,6 +196,22 @@ async function main() {
     check("técnico NÃO altera a cobrança da visita", !!v3, v3?.message);
     const { data: visCli } = await ca2.from("os_visitas").select("id").eq("os_id", os.id);
     check("cliente NÃO lê visitas", visCli?.length === 0, visCli);
+    const { error: v4 } = await t1.from("os_visitas").update({ faturado: true }).eq("id", vis!.id);
+    check("técnico NÃO fatura visita", !!v4, v4?.message);
+    const { error: v5 } = await t1.from("os_visitas").update({ valor_unitario: 1 }).eq("id", vis!.id);
+    check("técnico NÃO altera o valor da visita", !!v5, v5?.message);
+
+    // Saldo do contrato (função consumo_contrato_mes): só o admin e o próprio cliente
+    const { data: ctA } = await admin.from("contratos").select("id").eq("cliente_id", a.id).eq("status", "ativo").limit(1).single();
+    const mesRef = new Date().toISOString().slice(0, 7) + "-01";
+    const { data: saldoA, error: sA } = await ca2.rpc("consumo_contrato_mes", { p_contrato_id: ctA!.id, p_mes: mesRef });
+    check("cliente vê o saldo do próprio contrato", !sA && saldoA?.length === 1, sA?.message);
+    const { error: sB } = await cb2.rpc("consumo_contrato_mes", { p_contrato_id: ctA!.id, p_mes: mesRef });
+    check("cliente B NÃO vê o saldo do contrato do cliente A", !!sB, sB?.message);
+    const { error: sT } = await t1.rpc("consumo_contrato_mes", { p_contrato_id: ctA!.id, p_mes: mesRef });
+    check("técnico NÃO consulta saldo de contrato", !!sT, sT?.message);
+    const { error: sAnon } = await anonClient().rpc("consumo_contrato_mes", { p_contrato_id: ctA!.id, p_mes: mesRef });
+    check("anônimo NÃO consulta saldo de contrato", !!sAnon, sAnon?.message);
 
     // Aguardando assinatura: cliente passa a ver; técnico fica congelado
     await admin.from("ordens_servico").update({ status: "aguardando_assinatura" }).eq("id", os.id);

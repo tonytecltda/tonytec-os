@@ -1,4 +1,4 @@
-import { CalendarRange, Clock, ScrollText, Timer } from "lucide-react";
+import { ScrollText } from "lucide-react";
 import { requireRole } from "@/lib/auth";
 import { getConfig } from "@/lib/config";
 import { createClient } from "@/lib/supabase/server";
@@ -6,9 +6,10 @@ import { contratoVigente, situacaoContrato, vigenciaTexto } from "@/lib/contrato
 import { formatBRL, formatNumero } from "@/lib/format";
 import { CONTRATO_TIPO } from "@/lib/labels";
 import { PageHeader } from "@/components/page-header";
+import { SaldoContratoCard } from "@/components/saldo-contrato";
 import { EmptyState } from "@/components/empty-state";
 import { StatusBadge } from "@/components/status-badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Contrato" };
 
@@ -104,26 +105,7 @@ export default async function PortalContratoPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Saldo do mês</CardTitle>
-            <CardDescription>Visitas e horas já usadas neste mês.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-3 text-sm">
-            <div className="flex items-center gap-2">
-              <CalendarRange className="text-primary size-4" />
-              <span>{vigente.visitas_inclusas_mes} visita(s) por mês</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="text-primary size-4" />
-              <span>{formatNumero(vigente.horas_inclusas_mes)} hora(s) por mês</span>
-            </div>
-            <p className="text-muted-foreground flex items-start gap-2 text-xs">
-              <Timer className="mt-0.5 size-3.5 shrink-0" />O consumo do mês passa a aparecer aqui quando os
-              atendimentos começarem a ser registrados no sistema.
-            </p>
-          </CardContent>
-        </Card>
+        <SaldoContratoCard contratoId={vigente.id} />
       </div>
 
       {anteriores.length ? (

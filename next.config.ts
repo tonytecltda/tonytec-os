@@ -19,6 +19,8 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  // Bibliotecas com dependências nativas/dinâmicas ficam fora do bundle do servidor.
+  serverExternalPackages: ["exceljs"],
   images: {
     // Logo da empresa (bucket público "empresa" do Supabase Storage).
     remotePatterns: [{ protocol: "https", hostname: supabaseHost, pathname: "/storage/v1/object/public/**" }],

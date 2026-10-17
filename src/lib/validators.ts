@@ -264,5 +264,31 @@ export const avaliacaoSchema = z.object({
   comentario: z.string().trim().max(1000),
 });
 
+// ---------------------------------------------------------------- cobrança de visitas
+export const cobrancaVisitaSchema = z
+  .object({
+    cobranca_tipo: z.enum(["isento_contrato", "valor_unico", "valor_por_hora", "garantia", "cortesia"]),
+    valor_unitario: z.number({ error: "Informe o valor." }).min(0, "Valor inválido.").max(10_000_000),
+    quantidade_horas: z.number().min(0, "Horas inválidas.").max(1000).nullable(),
+    justificativa_isencao: z.string().trim().max(500),
+    observacoes_financeiras: z.string().trim().max(1000),
+  })
+  .superRefine((v, ctx) => {
+    if (
+      (v.cobranca_tipo === "garantia" || v.cobranca_tipo === "cortesia") &&
+      v.justificativa_isencao.length < 5
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["justificativa_isencao"],
+        message: "Garantia e cortesia exigem justificativa (mínimo 5 caracteres).",
+      });
+    }
+    if (v.cobranca_tipo === "valor_por_hora" && (v.quantidade_horas ?? 0) <= 0) {
+      ctx.addIssue({ code: "custom", path: ["quantidade_horas"], message: "Informe as horas cobráveis." });
+    }
+  });
+export type CobrancaVisitaInput = z.infer<typeof cobrancaVisitaSchema>;
+
 /** Motivo obrigatório para desativações (vai para a auditoria). */
 export const motivoSchema = z.string().trim().min(5, "Descreva o motivo (mínimo 5 caracteres).").max(500);

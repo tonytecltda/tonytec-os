@@ -582,6 +582,7 @@ export type Database = {
           finalizada_em: string | null
           hash_conteudo: string | null
           id: string
+          itens_faturado_em: string | null
           motivo_recusa: string | null
           numero: string
           observacoes_tecnicas: string | null
@@ -611,6 +612,7 @@ export type Database = {
           finalizada_em?: string | null
           hash_conteudo?: string | null
           id?: string
+          itens_faturado_em?: string | null
           motivo_recusa?: string | null
           numero?: string
           observacoes_tecnicas?: string | null
@@ -640,6 +642,7 @@ export type Database = {
           finalizada_em?: string | null
           hash_conteudo?: string | null
           id?: string
+          itens_faturado_em?: string | null
           motivo_recusa?: string | null
           numero?: string
           observacoes_tecnicas?: string | null
@@ -919,13 +922,17 @@ export type Database = {
       }
       os_visitas: {
         Row: {
+          cobranca_calculada_em: string | null
+          cobranca_manual: boolean
           cobranca_tipo: Database["public"]["Enums"]["cobranca_tipo"] | null
+          contrato_id: string | null
           created_at: string
           data_hora_chegada: string
           data_hora_saida: string | null
           deslocamento_km: number | null
           faturado: boolean
           faturado_em: string | null
+          horas_franquia: number
           horas_trabalhadas: number | null
           id: string
           justificativa_isencao: string | null
@@ -938,13 +945,17 @@ export type Database = {
           valor_unitario: number | null
         }
         Insert: {
+          cobranca_calculada_em?: string | null
+          cobranca_manual?: boolean
           cobranca_tipo?: Database["public"]["Enums"]["cobranca_tipo"] | null
+          contrato_id?: string | null
           created_at?: string
           data_hora_chegada?: string
           data_hora_saida?: string | null
           deslocamento_km?: number | null
           faturado?: boolean
           faturado_em?: string | null
+          horas_franquia?: number
           horas_trabalhadas?: number | null
           id?: string
           justificativa_isencao?: string | null
@@ -957,13 +968,17 @@ export type Database = {
           valor_unitario?: number | null
         }
         Update: {
+          cobranca_calculada_em?: string | null
+          cobranca_manual?: boolean
           cobranca_tipo?: Database["public"]["Enums"]["cobranca_tipo"] | null
+          contrato_id?: string | null
           created_at?: string
           data_hora_chegada?: string
           data_hora_saida?: string | null
           deslocamento_km?: number | null
           faturado?: boolean
           faturado_em?: string | null
+          horas_franquia?: number
           horas_trabalhadas?: number | null
           id?: string
           justificativa_isencao?: string | null
@@ -976,6 +991,13 @@ export type Database = {
           valor_unitario?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "os_visitas_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contratos"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "os_visitas_os_id_fkey"
             columns: ["os_id"]
@@ -1137,6 +1159,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      consumo_contrato_mes: {
+        Args: { p_contrato_id: string; p_mes: string }
+        Returns: {
+          horas_inclusas: number
+          horas_usadas: number
+          valor_excedente: number
+          visitas_excedentes: number
+          visitas_inclusas: number
+          visitas_usadas: number
+        }[]
+      }
       reabrir_os: {
         Args: { p_motivo: string; p_os_id: string }
         Returns: undefined

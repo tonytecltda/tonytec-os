@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { registrarAuditoria } from "@/lib/auditoria";
 import { emailConfigurado, enviarEmail, escaparHtml } from "@/lib/email";
 import { formatDataHora } from "@/lib/format";
+import { calcularCobrancaOs } from "@/lib/cobranca-server";
 import { hashConteudoOs } from "@/lib/os-hash";
 import { dadosCompletosOs, montarConteudoOs } from "@/lib/os";
 import { gerarPdfOs } from "@/lib/pdf/gerar-pdf-os";
@@ -118,6 +119,14 @@ export async function encerrarOs(
       ok: false,
       erro: "O conteúdo da OS mudou depois da assinatura. Volte para edição e colete as assinaturas novamente.",
     };
+  }
+
+  // Cobrança das visitas: calculada ANTES de encerrar (depois da assinatura só o admin altera).
+  // Uma falha aqui não impede o encerramento: o admin pode calcular pela tela de Cobrança.
+  try {
+    await calcularCobrancaOs(osId);
+  } catch (e) {
+    console.error("[os] cobrança das visitas", e);
   }
 
   const agora = new Date().toISOString();

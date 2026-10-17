@@ -98,6 +98,22 @@ export const OS_STATUS: Record<Enums["os_status"], string> = {
   cancelada: "Cancelada",
 };
 
+export const COBRANCA_TIPO: Record<Enums["cobranca_tipo"], string> = {
+  isento_contrato: "Isento (contrato)",
+  valor_unico: "Valor único",
+  valor_por_hora: "Por hora",
+  garantia: "Garantia",
+  cortesia: "Cortesia",
+};
+
+export const COBRANCA_TIPO_TOM: Record<Enums["cobranca_tipo"], Tom> = {
+  isento_contrato: "verde",
+  valor_unico: "azul",
+  valor_por_hora: "azul",
+  garantia: "violeta",
+  cortesia: "cinza",
+};
+
 export const OS_STATUS_TOM: Record<Enums["os_status"], Tom> = {
   rascunho: "cinza",
   em_execucao: "laranja",

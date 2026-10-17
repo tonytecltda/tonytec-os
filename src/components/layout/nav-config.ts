@@ -39,7 +39,7 @@ export const NAV: Record<Area, { titulo: string; itens: NavItem[] }> = {
       { href: "/admin/agenda", label: "Agenda", icon: CalendarDays, fase: 5 },
       { href: "/admin/clientes", label: "Clientes", icon: Users },
       { href: "/admin/contratos", label: "Contratos", icon: ScrollText },
-      { href: "/admin/cobranca", label: "Cobrança de visitas", icon: Receipt, fase: 4 },
+      { href: "/admin/cobranca", label: "Cobrança de visitas", icon: Receipt },
       { href: "/admin/tecnicos", label: "Técnicos", icon: Wrench },
       { href: "/admin/relatorios", label: "Relatórios", icon: BarChart3, fase: 5 },
       { href: "/admin/catalogos", label: "Catálogos", icon: BookOpen },

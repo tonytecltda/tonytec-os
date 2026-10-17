@@ -10,6 +10,7 @@ import { opcoesClientes } from "@/lib/queries";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
+import { SaldoContratoCard } from "@/components/saldo-contrato";
 import { ContratoForm } from "../contrato-form";
 
 export const metadata = { title: "Contrato" };
@@ -40,6 +41,9 @@ export default async function ContratoPage({ params }: PageProps<"/admin/contrat
       <PageHeader titulo={`Contrato ${c.numero}`} descricao={c.descricao ?? undefined}>
         <StatusBadge tom={s.tom}>{s.label}</StatusBadge>
       </PageHeader>
+      <div className="mb-6 max-w-xl">
+        <SaldoContratoCard contratoId={id} mostrarValores />
+      </div>
       <ContratoForm
         id={id}
         clientes={clientes}
