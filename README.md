@@ -6,7 +6,7 @@ Sistema de gestão de chamados, visitas técnicas, cobrança e ordens de serviç
 - **Stack:** Next.js 16 (App Router) + TypeScript · Tailwind CSS 4 + shadcn/ui · Supabase (Postgres, Auth, Storage, RLS) · Vercel
 - **Perfis:** `admin` (`/admin`), `tecnico` (`/tecnico`, mobile-first), `cliente` (`/portal`)
 
-> Status: **Fase 4 — Cobrança de visitas** concluída (sugestão pelo contrato, ajustes, faturamento em lote, fechamento mensal e exportações). Antes: **Fase 3 — OS e assinatura** concluída (atendimento no celular, horas, itens, fotos, assinatura na tela ou por link, PDF e bloqueio). Antes: **Fase 2 — Chamados** concluída (abertura pelo portal e pela Tonytec com anexos, Kanban,
+> Status: **Fase 5 — Dashboard, Relatórios e Agenda** concluída (KPIs com filtro de período, gráficos, 11 relatórios com exportação CSV/XLSX/PDF e agenda arrastável). Antes: **Fase 4 — Cobrança de visitas** concluída (sugestão pelo contrato, ajustes, faturamento em lote, fechamento mensal e exportações). Antes: **Fase 3 — OS e assinatura** concluída (atendimento no celular, horas, itens, fotos, assinatura na tela ou por link, PDF e bloqueio). Antes: **Fase 2 — Chamados** concluída (abertura pelo portal e pela Tonytec com anexos, Kanban,
 > atribuição, agendamento, comentários públicos/internos, histórico e SLA). Fases anteriores: cadastros e
 > fundação. Veja [docs/PREMISSAS.md](docs/PREMISSAS.md) para decisões e premissas.
 
@@ -115,7 +115,7 @@ Storage por URL assinada; fotos grandes são reduzidas no próprio celular antes
 npm run seed:demo    # 2 clientes, unidades, contrato, 2 técnicos, 2 usuários de portal, chamados
 npm run test:unit    # validações (CPF/CNPJ alfanumérico, datas, contratos)
 npm run test:rls     # isolamento entre clientes e permissões por perfil (69 verificações)
-npm run build && npm run test:e2e   # e2e: login, cadastro completo (Fase 1), fluxo de chamados (Fase 2), OS e assinatura (Fase 3), cobrança (Fase 4), 375 px
+npm run build && npm run test:e2e   # e2e: login, cadastro completo (Fase 1), fluxo de chamados (Fase 2), OS e assinatura (Fase 3), cobrança (Fase 4), dashboard/relatórios/agenda (Fase 5), 375 px
 ```
 
 > Os testes e2e rodam contra o banco configurado no `.env.local` e apagam os dados `[E2E]` que criam

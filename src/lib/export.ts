@@ -6,7 +6,7 @@ export type Coluna = {
   /** Largura aproximada em caracteres (XLSX). */
   largura?: number;
   /** "moeda" e "numero" usam formato numérico no XLSX e vírgula decimal no CSV. */
-  formato?: "texto" | "moeda" | "numero" | "data" | "datahora";
+  formato?: "texto" | "moeda" | "numero" | "inteiro" | "percentual" | "data" | "datahora";
 };
 
 function escaparCsv(valor: string) {
@@ -82,6 +82,8 @@ export async function gerarXlsx(
       const cel = row.getCell(i + 1);
       if (c.formato === "moeda") cel.numFmt = '"R$" #,##0.00';
       else if (c.formato === "numero") cel.numFmt = "#,##0.00";
+      else if (c.formato === "inteiro") cel.numFmt = "#,##0";
+      else if (c.formato === "percentual") cel.numFmt = '0.0"%"';
       else if (c.formato === "data") cel.numFmt = "dd/mm/yyyy";
       else if (c.formato === "datahora") cel.numFmt = "dd/mm/yyyy hh:mm";
     });
@@ -132,4 +134,59 @@ export function mesPorExtenso(m: string) {
     "dezembro",
   ];
   return `${nomes[mm - 1]} de ${a}`;
+}
+
+// ---------------------------------------------------------------- relatórios com várias seções
+export type SecaoExport = { titulo: string; colunas: Coluna[]; linhas: Celula[][] };
+
+/** CSV com várias seções separadas por linha em branco (cada uma com seu título e cabeçalho). */
+export function gerarCsvSecoes(titulo: string, secoes: SecaoExport[]): string {
+  const blocos = secoes.map((s) => {
+    const csv = gerarCsv(s.colunas, s.linhas).replace(/^﻿/, "").trimEnd();
+    return `${escaparCsv(s.titulo)}\r\n${csv}`;
+  });
+  return `﻿${escaparCsv(titulo)}\r\n\r\n${blocos.join("\r\n\r\n")}\r\n`;
+}
+
+/** XLSX com uma aba por seção. */
+export async function gerarXlsxSecoes(titulo: string, secoes: SecaoExport[]): Promise<Buffer> {
+  const ExcelJS = (await import("exceljs")).default;
+  const wb = new ExcelJS.Workbook();
+  wb.creator = "Tonytec OS";
+  wb.created = new Date();
+  const usados = new Set<string>();
+  secoes.forEach((s, idx) => {
+    let nome =
+      s.titulo
+        .replace(/[\/?*[\]:]/g, " ")
+        .slice(0, 28)
+        .trim() || `Seção ${idx + 1}`;
+    while (usados.has(nome.toLowerCase())) nome = `${nome.slice(0, 25)} ${idx + 1}`;
+    usados.add(nome.toLowerCase());
+    const ws = wb.addWorksheet(nome);
+    ws.mergeCells(1, 1, 1, Math.max(s.colunas.length, 1));
+    ws.getCell(1, 1).value = `${titulo} — ${s.titulo}`;
+    ws.getCell(1, 1).font = { bold: true, size: 13 };
+    const cab = ws.getRow(3);
+    s.colunas.forEach((c, i) => {
+      cab.getCell(i + 1).value = c.titulo;
+      ws.getColumn(i + 1).width = c.largura ?? 16;
+    });
+    cab.font = { bold: true, color: { argb: "FFFFFFFF" } };
+    cab.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1D4ED8" } };
+    for (const l of s.linhas) {
+      const row = ws.addRow(l.map((v) => (v instanceof Date ? v : (v ?? null))));
+      s.colunas.forEach((c, i) => {
+        const cel = row.getCell(i + 1);
+        if (c.formato === "moeda") cel.numFmt = '"R$" #,##0.00';
+        else if (c.formato === "numero") cel.numFmt = "#,##0.00";
+        else if (c.formato === "inteiro") cel.numFmt = "#,##0";
+        else if (c.formato === "percentual") cel.numFmt = '0.0"%"';
+        else if (c.formato === "data") cel.numFmt = "dd/mm/yyyy";
+        else if (c.formato === "datahora") cel.numFmt = "dd/mm/yyyy hh:mm";
+      });
+    }
+    ws.views = [{ state: "frozen", ySplit: 3 }];
+  });
+  return Buffer.from(await wb.xlsx.writeBuffer());
 }

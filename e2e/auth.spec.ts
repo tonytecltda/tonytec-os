@@ -30,7 +30,7 @@ test("admin cai no /admin", async ({ page }) => {
   test.skip(!process.env.SEED_ADMIN_PASSWORD, "SEED_ADMIN_PASSWORD não definido");
   await login(page, process.env.SEED_ADMIN_EMAIL!, process.env.SEED_ADMIN_PASSWORD!);
   await expect(page).toHaveURL(/\/admin$/);
-  await expect(page.getByText("Clientes ativos")).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Olá,/ })).toBeVisible();
 });
 
 test("técnico cai no /tecnico, vê o chamado atribuído e não acessa /admin", async ({ page }) => {

@@ -1174,6 +1174,176 @@ export type Database = {
         Args: { p_motivo: string; p_os_id: string }
         Returns: undefined
       }
+      rel_calor: {
+        Args: { p_ate: string; p_de: string }
+        Returns: {
+          chamados: number
+          dia_semana: number
+          hora: number
+        }[]
+      }
+      rel_categoria_dia: {
+        Args: { p_ate: string; p_de: string }
+        Returns: {
+          categoria: string
+          dom: number
+          qua: number
+          qui: number
+          sab: number
+          seg: number
+          sex: number
+          ter: number
+          total: number
+        }[]
+      }
+      rel_clientes: {
+        Args: { p_ate: string; p_de: string }
+        Returns: {
+          chamados: number
+          cliente: string
+          horas: number
+          os_encerradas: number
+          valor_faturado: number
+          valor_total: number
+        }[]
+      }
+      rel_contratos: {
+        Args: { p_ate: string; p_de: string }
+        Returns: {
+          cliente: string
+          contrato: string
+          dias_para_vencer: number
+          horas_inclusas: number
+          horas_usadas: number
+          mensal: number
+          valor_excedente: number
+          vigencia_fim: string
+          visitas_excedentes: number
+          visitas_inclusas: number
+          visitas_usadas: number
+        }[]
+      }
+      rel_dashboard: { Args: { p_ate: string; p_de: string }; Returns: Json }
+      rel_evolucao: {
+        Args: { p_ate: string; p_de: string }
+        Returns: {
+          abertos: number
+          backlog_final: number
+          mes: string
+          resolvidos: number
+          tempo_medio_resolucao_h: number
+        }[]
+      }
+      rel_faturamento: {
+        Args: { p_ate: string; p_de: string; p_dim: string }
+        Returns: {
+          a_faturar: number
+          faturado: number
+          grupo: string
+          itens: number
+          total: number
+        }[]
+      }
+      rel_materiais: {
+        Args: { p_ate: string; p_de: string }
+        Returns: {
+          item: string
+          os: number
+          quantidade: number
+          tipo: string
+          valor_total: number
+        }[]
+      }
+      rel_os_aguardando: {
+        Args: { p_ate: string; p_de: string }
+        Returns: {
+          cliente: string
+          concluida_em: string
+          dias_aguardando: number
+          os: string
+          tecnico: string
+        }[]
+      }
+      rel_os_pendencias: {
+        Args: { p_ate: string; p_de: string }
+        Returns: {
+          cliente: string
+          encerrada_em: string
+          os: string
+          pendencia: string
+          tecnico: string
+        }[]
+      }
+      rel_problemas: {
+        Args: { p_ate: string; p_de: string }
+        Returns: {
+          categoria: string
+          chamados: number
+          resolvidos: number
+          tempo_medio_resolucao_h: number
+          tipo: string
+        }[]
+      }
+      rel_reincidencia: {
+        Args: { p_ate: string; p_de: string }
+        Returns: {
+          cliente: string
+          ocorrencias: number
+          reincidencias: number
+          taxa_pct: number
+          tipo: string
+          unidade: string
+        }[]
+      }
+      rel_satisfacao: {
+        Args: { p_ate: string; p_de: string }
+        Returns: {
+          avaliado_em: string
+          cliente: string
+          comentario: string
+          nota: number
+          protocolo: string
+          tecnico: string
+        }[]
+      }
+      rel_sla: {
+        Args: { p_ate: string; p_de: string; p_dim: string }
+        Returns: {
+          chamados: number
+          grupo: string
+          resposta_ok: number
+          resposta_pct: number
+          resposta_total: number
+          solucao_ok: number
+          solucao_pct: number
+          solucao_total: number
+        }[]
+      }
+      rel_sla_violacoes: {
+        Args: { p_ate: string; p_de: string }
+        Returns: {
+          atraso_h: number
+          cliente: string
+          concluido_em: string
+          limite: string
+          prazo: string
+          prioridade: string
+          protocolo: string
+          tecnico: string
+        }[]
+      }
+      rel_tecnicos: {
+        Args: { p_ate: string; p_de: string }
+        Returns: {
+          avaliacoes: number
+          chamados_resolvidos: number
+          horas: number
+          nota_media: number
+          os_encerradas: number
+          tecnico: string
+          tempo_medio_por_os_h: number
+        }[]
+      }
     }
     Enums: {
       assinatura_tipo: "cliente" | "tecnico"

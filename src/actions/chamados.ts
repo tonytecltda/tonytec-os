@@ -8,6 +8,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { registrarAuditoria } from "@/lib/auditoria";
 import { ANEXO_MAX_BYTES, ANEXO_TIPOS, nomeSeguro } from "@/lib/anexos";
+import { novoHorario } from "@/lib/agenda";
+import { paraInputDataHora } from "@/lib/format";
 import { CHAMADO_STATUS } from "@/lib/labels";
 import {
   chamadoAdminSchema,
@@ -193,6 +195,49 @@ export async function atualizarChamado(id: string, input: unknown): Promise<Acti
     undefined,
     status !== d.status ? `Salvo. Status alterado para “${CHAMADO_STATUS[status]}”.` : "Chamado atualizado.",
   );
+}
+
+/**
+ * Reagenda a visita (agenda dos técnicos: arrastar para outro dia ou escolher o horário).
+ * `dia` mantém a hora atual (ou 09:00); `horario` é um datetime-local de Brasília.
+ */
+export async function reagendarChamado(
+  id: string,
+  destino: { dia?: string; horario?: string },
+): Promise<ActionResult> {
+  await requireAdmin();
+  if (!idSchema.safeParse(id).success) return fail("Chamado inválido.");
+  const supabase = await createClient();
+  const { data: atual } = await supabase
+    .from("chamados")
+    .select("status, data_agendada")
+    .eq("id", id)
+    .maybeSingle();
+  if (!atual) return fail("Chamado não encontrado.");
+  if (atual.status === "resolvido" || atual.status === "cancelado") {
+    return fail("Chamado encerrado não pode ser reagendado.");
+  }
+
+  let horario = destino.horario ?? "";
+  if (!horario && destino.dia) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(destino.dia)) return fail("Data inválida.");
+    const local = atual.data_agendada ? paraInputDataHora(atual.data_agendada) : null;
+    horario = novoHorario(destino.dia, local);
+  }
+  const iso = localParaIso(horario);
+  if (!iso) return fail("Data e hora inválidas.");
+
+  const { error } = await supabase
+    .from("chamados")
+    .update({
+      data_agendada: iso,
+      ...(atual.status === "aberto" || atual.status === "triagem" ? { status: "agendado" as const } : {}),
+    })
+    .eq("id", id);
+  if (error) return fail(dbErrorMessage(error));
+  revalidatePath("/admin/agenda");
+  revalidarChamado(id);
+  return ok(undefined, "Visita reagendada.");
 }
 
 /** Mudança rápida de status (Kanban do admin e botões do técnico). */
