@@ -4,7 +4,15 @@ import type { Database } from "@/types/database";
 import { AREA_ROLES, ROLE_HOME, isUserRole } from "@/lib/roles";
 
 /** Rotas acessíveis sem login. */
-const PUBLIC_PATHS = ["/login", "/auth", "/definir-senha", "/esqueci-senha", "/assinar", "/sem-acesso"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/auth",
+  "/acesso",
+  "/definir-senha",
+  "/esqueci-senha",
+  "/assinar",
+  "/sem-acesso",
+];
 
 function isPublic(pathname: string) {
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));

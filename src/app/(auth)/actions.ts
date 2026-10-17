@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { publicEnv } from "@/lib/env";
+import { origemApp } from "@/lib/acesso";
 import { AREA_ROLES, ROLE_HOME, isUserRole } from "@/lib/roles";
 
 export type FormState = { error?: string; success?: string } | undefined;
@@ -30,6 +30,7 @@ export async function signIn(_prev: FormState, formData: FormData): Promise<Form
     password: parsed.data.password,
   });
   if (error || !data.user) {
+    if (error?.code === "user_banned") return { error: "Seu acesso está desativado. Fale com a Tonytec." };
     return { error: "E-mail ou senha incorretos." };
   }
 
@@ -64,10 +65,35 @@ export async function requestPasswordReset(_prev: FormState, formData: FormData)
 
   const supabase = await createClient();
   await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    redirectTo: `${publicEnv.NEXT_PUBLIC_APP_URL}/auth/confirm?next=/definir-senha`,
+    redirectTo: `${await origemApp()}/auth/confirm?next=/definir-senha`,
   });
   // Resposta sempre igual, para não revelar quais e-mails existem.
-  return { success: "Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha." };
+  return {
+    success:
+      "Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha. " +
+      "Se não chegar em alguns minutos, peça um novo link de acesso à Tonytec.",
+  };
+}
+
+const acessoSchema = z.object({
+  token: z.string().min(10).max(500),
+  tipo: z.enum(["recovery", "invite", "magiclink", "email"]),
+});
+
+/**
+ * Consome o token do link de acesso SOMENTE quando o usuário clica em "Continuar"
+ * (pré-visualizações de link do WhatsApp/e-mail fazem GET e não podem gastar o token).
+ */
+export async function ativarAcesso(_prev: FormState, formData: FormData): Promise<FormState> {
+  const parsed = acessoSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: "Link inválido. Peça um novo link à Tonytec." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.verifyOtp({ token_hash: parsed.data.token, type: parsed.data.tipo });
+  if (error) {
+    return { error: "Este link é inválido, já foi usado ou expirou. Peça um novo link à Tonytec." };
+  }
+  redirect("/definir-senha");
 }
 
 const passwordSchema = z

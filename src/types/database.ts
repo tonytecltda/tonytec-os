@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -442,7 +442,7 @@ export type Database = {
           descricao?: string | null
           horas_inclusas_mes?: number
           id?: string
-          numero: string
+          numero?: string
           observacoes?: string | null
           politica_visita_excedente?: Database["public"]["Enums"]["politica_excedente"]
           sla_resposta_horas?: number | null

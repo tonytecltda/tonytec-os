@@ -6,7 +6,8 @@ Sistema de gestão de chamados, visitas técnicas, cobrança e ordens de serviç
 - **Stack:** Next.js 16 (App Router) + TypeScript · Tailwind CSS 4 + shadcn/ui · Supabase (Postgres, Auth, Storage, RLS) · Vercel
 - **Perfis:** `admin` (`/admin`), `tecnico` (`/tecnico`, mobile-first), `cliente` (`/portal`)
 
-> Status: **Fase 0 — Fundação** concluída. Veja [docs/PREMISSAS.md](docs/PREMISSAS.md) para decisões e premissas.
+> Status: **Fase 1 — Cadastros** concluída (clientes, unidades, usuários do portal, técnicos, contratos,
+> catálogos e configurações). Veja [docs/PREMISSAS.md](docs/PREMISSAS.md) para decisões e premissas.
 
 ---
 
@@ -61,14 +62,30 @@ Para criar uma migração nova: adicione `supabase/migrations/AAAAMMDDHHMMSS_des
 
 O cadastro público está **desativado**: usuários técnicos e de cliente são criados pelo admin.
 
+### Criando usuários (técnicos, administradores e usuários do portal)
+
+- **Técnicos:** _Técnicos → Novo técnico_. **Administradores:** _Configurações → Administradores_.
+  **Usuários do portal:** _Clientes → (cliente) → Usuários do portal → Novo usuário_.
+- Ao salvar, o sistema mostra um **link de acesso** (válido por 24 h, uso único) com botões para enviar
+  por **WhatsApp** ou e-mail. O usuário abre o link, clica em **Continuar** e cria a senha.
+- Link expirou ou o usuário esqueceu a senha? No menu “⋯” do usuário: **Gerar link de acesso**.
+- **Desativar** um usuário corta o acesso na hora (com motivo registrado na auditoria). Desativar um
+  **cliente** também desativa os usuários do portal dele.
+- O botão “Continuar” existe de propósito: pré-visualizações de link (WhatsApp, antivírus de e-mail)
+  abrem o endereço sozinhas e, sem ele, gastariam o link antes do usuário.
+
 ## 4. Dados de demonstração e testes
 
 ```bash
 # .env.local: SEED_DEMO=true e SEED_DEMO_PASSWORD=<senha>
 npm run seed:demo    # 2 clientes, unidades, contrato, 2 técnicos, 2 usuários de portal, chamados
-npm run test:rls     # verifica isolamento entre clientes e permissões por perfil (31 verificações)
-npm run build && npx playwright test   # e2e: login dos 3 perfis (desktop e mobile)
+npm run test:unit    # validações (CPF/CNPJ alfanumérico, datas, contratos)
+npm run test:rls     # isolamento entre clientes e permissões por perfil (31 verificações)
+npm run build && npm run test:e2e   # e2e: login dos 3 perfis, cadastro completo (Fase 1), 375 px
 ```
+
+> Os testes e2e rodam contra o banco configurado no `.env.local` e apagam os dados `[E2E]` que criam
+> (ficam apenas os registros de auditoria). Antes do go-live, o ideal é um projeto Supabase de homologação.
 
 Usuários demo (senha = `SEED_DEMO_PASSWORD`): `tecnico.demo@example.com`, `tecnico2.demo@example.com`,
 `cliente.alfa.demo@example.com`, `cliente.beta.demo@example.com`.

@@ -16,7 +16,9 @@
     "db:types": "tsx scripts/db-types.ts",
     "seed:admin": "tsx scripts/seed-admin.ts",
     "seed:demo": "tsx scripts/seed-demo.ts",
-    "test:rls": "tsx scripts/test-rls.ts"
+    "test:rls": "tsx scripts/test-rls.ts",
+    "test:unit": "tsx --test \"src/**/*.test.ts\"",
+    "test:e2e": "playwright test"
   },
   "engines": {
     "node": ">=20.9"
@@ -27,6 +29,7 @@
     "@supabase/supabase-js": "^2.118.0",
     "@tanstack/react-query": "^5.104.3",
     "class-variance-authority": "^0.7.1",
+    "cmdk": "^1.1.1",
     "cn": "^0.5.0",
     "lucide-react": "^1.58.0",
     "next": "16.4.2",

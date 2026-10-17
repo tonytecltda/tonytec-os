@@ -12,20 +12,26 @@ export type CurrentProfile = {
   cliente_id: string | null;
 };
 
+/** Claims do JWT da sessão atual (ou null), uma vez por request. */
+export const getSessionClaims = cache(async () => {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  return data?.claims ?? null;
+});
+
 /**
  * Perfil do usuário logado, lido do BANCO (fonte da verdade), uma vez por request.
- * Retorna null se não houver sessão ou o perfil estiver inativo.
+ * Retorna null se não houver sessão ou o perfil estiver inativo/inexistente.
  */
 export const getCurrentProfile = cache(async (): Promise<CurrentProfile | null> => {
-  const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const userId = claimsData?.claims?.sub;
-  if (!userId) return null;
+  const claims = await getSessionClaims();
+  if (!claims?.sub) return null;
 
+  const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
     .select("id, nome, email, role, cliente_id, ativo")
-    .eq("id", userId)
+    .eq("id", claims.sub)
     .maybeSingle();
 
   if (!profile || !profile.ativo) return null;
@@ -44,7 +50,13 @@ export const getCurrentProfile = cache(async (): Promise<CurrentProfile | null> 
  */
 export async function requireRole(...roles: UserRole[]): Promise<CurrentProfile> {
   const profile = await getCurrentProfile();
-  if (!profile) redirect("/login");
+  if (!profile) {
+    // Sessão válida mas perfil inativo/inexistente: não mandar para /login
+    // (o proxy devolveria para a área da role, gerando loop).
+    redirect((await getSessionClaims()) ? "/sem-acesso" : "/login");
+  }
   if (!roles.includes(profile.role)) redirect(ROLE_HOME[profile.role]);
   return profile;
 }
+
+export const requireAdmin = () => requireRole("admin");

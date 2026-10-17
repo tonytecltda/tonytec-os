@@ -13,6 +13,7 @@ import { NAV, type Area, type NavItem } from "./nav-config";
 import { UserMenu } from "./user-menu";
 
 type ShellUser = { nome: string; email: string; papel: string };
+type ShellEmpresa = { nome: string; logoUrl: string | null };
 
 function isActive(pathname: string, item: NavItem, raiz: string) {
   if (item.href === raiz) return pathname === raiz;
@@ -77,10 +78,12 @@ function NavLinks({ area, onNavigate }: { area: Area; onNavigate?: () => void })
 export function AppShell({
   area,
   user,
+  empresa,
   children,
 }: {
   area: Area;
   user: ShellUser;
+  empresa: ShellEmpresa;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -91,7 +94,7 @@ export function AppShell({
       {/* Sidebar desktop */}
       <aside className="bg-sidebar text-sidebar-foreground border-sidebar-border sticky top-0 hidden h-svh w-64 shrink-0 flex-col border-r lg:flex">
         <div className="border-sidebar-border flex h-16 items-center border-b px-4">
-          <Brand subtitle={titulo} />
+          <Brand subtitle={titulo} logoUrl={empresa.logoUrl} nome={empresa.nome} />
         </div>
         <div className="flex-1 overflow-y-auto p-3">
           <NavLinks area={area} />
@@ -113,7 +116,7 @@ export function AppShell({
             >
               <SheetHeader className="border-sidebar-border border-b">
                 <SheetTitle className="text-sidebar-foreground">
-                  <Brand subtitle={titulo} />
+                  <Brand subtitle={titulo} logoUrl={empresa.logoUrl} nome={empresa.nome} />
                 </SheetTitle>
               </SheetHeader>
               <div className="p-3">
@@ -123,7 +126,7 @@ export function AppShell({
           </Sheet>
 
           <div className="lg:hidden">
-            <span className="font-semibold tracking-tight">Tonytec OS</span>
+            <span className="font-semibold tracking-tight">{empresa.nome} OS</span>
           </div>
           <div className="flex-1" />
           <span className="text-muted-foreground hidden truncate text-sm sm:block">{user.nome}</span>

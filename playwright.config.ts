@@ -19,7 +19,8 @@ export default defineConfig({
   },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
-    { name: "mobile", use: { ...devices["Pixel 7"] } },
+    // Celular estreito (375 px), como o técnico/cliente em campo.
+    { name: "mobile", use: { ...devices["Pixel 7"], viewport: { width: 375, height: 740 } } },
   ],
   webServer: {
     command: `npx next start -p ${PORT}`,

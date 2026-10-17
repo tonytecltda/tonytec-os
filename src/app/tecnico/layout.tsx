@@ -1,15 +1,9 @@
-import { requireRole } from "@/lib/auth";
-import { ROLE_LABEL } from "@/lib/roles";
-import { AppShell } from "@/components/layout/app-shell";
+import { AreaLayout } from "@/components/layout/area-layout";
 
-export default async function TecnicoLayout({ children }: LayoutProps<"/tecnico">) {
-  const profile = await requireRole("tecnico");
+export default function TecnicoLayout({ children }: LayoutProps<"/tecnico">) {
   return (
-    <AppShell
-      area="tecnico"
-      user={{ nome: profile.nome, email: profile.email, papel: ROLE_LABEL[profile.role] }}
-    >
+    <AreaLayout area="tecnico" role="tecnico">
       {children}
-    </AppShell>
+    </AreaLayout>
   );
 }

@@ -1,31 +1,32 @@
-import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * Destino dos links de convite / redefinição de senha.
- * Aceita os dois formatos do Supabase:
- *   ?token_hash=...&type=invite|recovery   (links gerados pelo admin)
- *   ?code=...                               (fluxo PKCE do "esqueci minha senha")
+ * Destino dos links enviados pelo Supabase por e-mail.
+ *   ?code=...                 (fluxo PKCE do "esqueci minha senha") -> troca pelo login
+ *   ?token_hash=...&type=...  -> NÃO consome aqui: manda para /acesso, onde o usuário
+ *                                clica em "Continuar" (pré-visualizações de link não gastam o token)
  */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
   const tokenHash = searchParams.get("token_hash");
-  const type = searchParams.get("type") as EmailOtpType | null;
+  const type = searchParams.get("type") ?? "recovery";
   const code = searchParams.get("code");
   const nextParam = searchParams.get("next") ?? "/definir-senha";
   const next = nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/definir-senha";
 
-  const supabase = await createClient();
-  let ok = false;
-
-  if (tokenHash && type) {
-    const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
-    ok = !error;
-  } else if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    ok = !error;
+  if (tokenHash) {
+    const url = new URL("/acesso", origin);
+    url.searchParams.set("token", tokenHash);
+    url.searchParams.set("tipo", type);
+    return NextResponse.redirect(url);
   }
 
-  return NextResponse.redirect(new URL(ok ? next : "/login?erro=link", origin));
+  if (code) {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error) return NextResponse.redirect(new URL(next, origin));
+  }
+
+  return NextResponse.redirect(new URL("/login?erro=link", origin));
 }
