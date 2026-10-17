@@ -41,7 +41,7 @@ export const SELECT_VISITA_COBRANCA = `
   quantidade_horas, valor_total, justificativa_isencao, observacoes_financeiras, faturado, faturado_em,
   cobranca_manual, horas_franquia, contrato_id,
   contratos(numero),
-  ordens_servico!inner(numero, finalizada_em, cliente_id, chamados(protocolo), clientes(razao_social, nome_fantasia))
+  ordens_servico!inner(numero, finalizada_em, ativo, cliente_id, chamados(protocolo), clientes(razao_social, nome_fantasia))
 `;
 
 /** Consulta de visitas de OS encerradas, com os filtros da tela de Cobrança. */
@@ -53,7 +53,8 @@ export async function consultarVisitasCobranca(
   let q = supabase
     .from("os_visitas")
     .select(SELECT_VISITA_COBRANCA, { count: "exact" })
-    .not("ordens_servico.finalizada_em", "is", null);
+    .not("ordens_servico.finalizada_em", "is", null)
+    .eq("ordens_servico.ativo", true);
   if (f.cliente) q = q.eq("ordens_servico.cliente_id", f.cliente);
   if (f.de) q = q.gte("data_hora_chegada", `${f.de}T00:00:00-03:00`);
   if (f.ate) q = q.lte("data_hora_chegada", `${f.ate}T23:59:59.999-03:00`);
@@ -74,8 +75,9 @@ export async function totaisCobranca(f: FiltrosCobranca) {
   const supabase = await createClient();
   let q = supabase
     .from("os_visitas")
-    .select("valor_total, faturado, cobranca_tipo, ordens_servico!inner(finalizada_em, cliente_id)")
-    .not("ordens_servico.finalizada_em", "is", null);
+    .select("valor_total, faturado, cobranca_tipo, ordens_servico!inner(finalizada_em, ativo, cliente_id)")
+    .not("ordens_servico.finalizada_em", "is", null)
+    .eq("ordens_servico.ativo", true);
   if (f.cliente) q = q.eq("ordens_servico.cliente_id", f.cliente);
   if (f.de) q = q.gte("data_hora_chegada", `${f.de}T00:00:00-03:00`);
   if (f.ate) q = q.lte("data_hora_chegada", `${f.ate}T23:59:59.999-03:00`);
@@ -189,6 +191,7 @@ export async function carregarFechamento(clienteId: string, mes: string): Promis
       .select(SELECT_VISITA_COBRANCA)
       .eq("ordens_servico.cliente_id", clienteId)
       .not("ordens_servico.finalizada_em", "is", null)
+      .eq("ordens_servico.ativo", true)
       .gte("data_hora_chegada", inicio)
       .lt("data_hora_chegada", fim)
       .order("data_hora_chegada"),
@@ -198,6 +201,7 @@ export async function carregarFechamento(clienteId: string, mes: string): Promis
         "id, numero, itens_faturado_em, os_itens(descricao, quantidade, valor_unitario, valor_total, cobrado, created_at)",
       )
       .eq("cliente_id", clienteId)
+      .eq("ativo", true)
       .not("finalizada_em", "is", null)
       .gte("finalizada_em", inicio)
       .lt("finalizada_em", fim)

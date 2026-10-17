@@ -86,7 +86,8 @@ export async function calcularCobrancaVisita(
     const { inicio, fim } = janelaDoMes(visita.data_hora_chegada);
     const { data: outras } = await sa
       .from("os_visitas")
-      .select("cobranca_tipo, horas_franquia")
+      .select("cobranca_tipo, horas_franquia, ordens_servico!inner(ativo)")
+      .eq("ordens_servico.ativo", true) // OS arquivada não consome a franquia
       .eq("contrato_id", contrato.id)
       .gte("data_hora_chegada", inicio)
       .lt("data_hora_chegada", fim)
@@ -151,9 +152,10 @@ export async function calcularCobrancasPendentes(): Promise<number> {
   const sa = createAdminClient();
   const { data: pendentes } = await sa
     .from("os_visitas")
-    .select("os_id, ordens_servico!inner(finalizada_em)")
+    .select("os_id, ordens_servico!inner(finalizada_em, ativo)")
     .is("cobranca_tipo", null)
     .not("ordens_servico.finalizada_em", "is", null)
+    .eq("ordens_servico.ativo", true)
     .order("data_hora_chegada"); // a franquia do contrato é consumida em ordem cronológica
   const osIds = [...new Set((pendentes ?? []).map((p) => p.os_id))];
   for (const id of osIds) await calcularCobrancaOs(id);

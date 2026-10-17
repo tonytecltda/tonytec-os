@@ -155,9 +155,10 @@ export async function faturarFechamento(
   // Só visitas de OS encerradas do cliente, com cobrança calculada.
   const { data: visitas } = await supabase
     .from("os_visitas")
-    .select("id, cobranca_tipo, ordens_servico!inner(cliente_id, finalizada_em)")
+    .select("id, cobranca_tipo, ordens_servico!inner(cliente_id, finalizada_em, ativo)")
     .eq("ordens_servico.cliente_id", clienteId)
     .not("ordens_servico.finalizada_em", "is", null)
+    .eq("ordens_servico.ativo", true)
     .gte("data_hora_chegada", inicio)
     .lt("data_hora_chegada", fim)
     .eq("faturado", !faturado);
@@ -176,6 +177,7 @@ export async function faturarFechamento(
     .from("ordens_servico")
     .update({ itens_faturado_em: faturado ? new Date().toISOString() : null })
     .eq("cliente_id", clienteId)
+    .eq("ativo", true)
     .not("finalizada_em", "is", null)
     .gte("finalizada_em", inicio)
     .lt("finalizada_em", fim)

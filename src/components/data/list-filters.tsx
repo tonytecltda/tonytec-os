@@ -101,8 +101,10 @@ export function ClienteFilter({ clientes, param = "cliente" }: { clientes: Opcao
   const { setParam, searchParams } = useSetParam();
   const atual = searchParams.get(param) ?? "";
   return (
-    <div className="flex w-full items-center gap-1 sm:w-64">
-      <ClienteCombobox clientes={clientes} value={atual} onChange={(id) => setParam(param, id)} />
+    <div className="flex w-full min-w-0 items-center gap-1 sm:w-64">
+      <div className="min-w-0 flex-1">
+        <ClienteCombobox clientes={clientes} value={atual} onChange={(id) => setParam(param, id)} />
+      </div>
       {atual ? (
         <Button
           variant="ghost"

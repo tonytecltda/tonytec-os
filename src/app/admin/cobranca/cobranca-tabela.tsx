@@ -123,8 +123,8 @@ export function CobrancaTabela({ linhas }: { linhas: LinhaCobranca[] }) {
               </TableHead>
               <TableHead>Visita</TableHead>
               <TableHead className="hidden lg:table-cell">Horas</TableHead>
-              <TableHead>Cobrança</TableHead>
-              <TableHead className="text-right">Valor</TableHead>
+              <TableHead className="hidden sm:table-cell">Cobrança</TableHead>
+              <TableHead className="hidden text-right sm:table-cell">Valor</TableHead>
               <TableHead className="hidden sm:table-cell">Faturamento</TableHead>
               <TableHead className="w-10">
                 <span className="sr-only">Ajustar</span>
@@ -147,11 +147,20 @@ export function CobrancaTabela({ linhas }: { linhas: LinhaCobranca[] }) {
                     <span className="font-mono">{l.osNumero}</span>
                     {l.protocolo ? ` · ${l.protocolo}` : ""} · {formatDataHora(l.chegada)}
                   </div>
+                  <div className="mt-1 flex flex-wrap items-center gap-2 sm:hidden">
+                    {l.tipo ? (
+                      <StatusBadge tom={COBRANCA_TIPO_TOM[l.tipo]}>{COBRANCA_TIPO[l.tipo]}</StatusBadge>
+                    ) : (
+                      <StatusBadge tom="amarelo">Sem cálculo</StatusBadge>
+                    )}
+                    <span className="font-medium tabular-nums">{formatBRL(l.valor)}</span>
+                    {l.faturado ? <StatusBadge tom="verde">Faturado</StatusBadge> : null}
+                  </div>
                 </TableCell>
                 <TableCell className="hidden tabular-nums lg:table-cell">
                   {l.horas == null ? "—" : `${formatNumero(l.horas)} h`}
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden sm:table-cell">
                   {l.tipo ? (
                     <div className="grid gap-0.5">
                       <StatusBadge tom={COBRANCA_TIPO_TOM[l.tipo]} className="w-fit">
@@ -170,7 +179,9 @@ export function CobrancaTabela({ linhas }: { linhas: LinhaCobranca[] }) {
                     <StatusBadge tom="amarelo">Sem cálculo</StatusBadge>
                   )}
                 </TableCell>
-                <TableCell className="text-right font-medium tabular-nums">{formatBRL(l.valor)}</TableCell>
+                <TableCell className="hidden text-right font-medium tabular-nums sm:table-cell">
+                  {formatBRL(l.valor)}
+                </TableCell>
                 <TableCell className="hidden sm:table-cell">
                   <StatusBadge tom={l.faturado ? "verde" : "cinza"}>
                     {l.faturado ? "Faturado" : "A faturar"}

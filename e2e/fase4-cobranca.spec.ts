@@ -99,10 +99,11 @@ test.describe("Fase 4 — cobrança de visitas", () => {
     if (ctErro) throw ctErro;
     contratoId = contrato.id;
 
+    // OS encerrada não troca de responsável: usa o admin, para o técnico demo não "herdar" o cliente de teste.
     const { data: tecnico } = await sa
       .from("profiles")
       .select("id")
-      .eq("email", DEMO.users.tecnico.email)
+      .eq("email", process.env.SEED_ADMIN_EMAIL!)
       .single();
     const plano = [
       { dia: "02", minutos: 60 },
@@ -135,15 +136,13 @@ test.describe("Fase 4 — cobrança de visitas", () => {
         .single();
       if (vErro) throw vErro;
       if (i === 2) {
-        await sa
-          .from("os_itens")
-          .insert({
-            os_id: os.id,
-            descricao: "Fonte E2E 12V",
-            quantidade: 2,
-            valor_unitario: 45,
-            cobrado: true,
-          });
+        await sa.from("os_itens").insert({
+          os_id: os.id,
+          descricao: "Fonte E2E 12V",
+          quantidade: 2,
+          valor_unitario: 45,
+          cobrado: true,
+        });
       }
       const agora = new Date().toISOString();
       const { error: encErro } = await sa
@@ -163,7 +162,7 @@ test.describe("Fase 4 — cobrança de visitas", () => {
   });
 
   test.afterAll(async () => {
-    if (!clienteId) return;
+    if (!clienteId || process.env.E2E_MANTER) return; // E2E_MANTER=1: mantém os dados para inspeção visual
     const sa = admin();
     for (const v of visitas) await sa.from("ordens_servico").update({ ativo: false }).eq("id", v.osId);
     await sa.from("contratos").update({ status: "encerrado" }).eq("id", contratoId);
