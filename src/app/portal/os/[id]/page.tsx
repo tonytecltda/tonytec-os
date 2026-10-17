@@ -48,10 +48,7 @@ export default async function PortalOsDetalhePage({ params }: PageProps<"/portal
           <ArrowLeft /> Ordens de serviço
         </Link>
       </Button>
-      <PageHeader
-        titulo={`OS ${os.numero}`}
-        descricao={os.chamados ? `Chamado ${os.chamados.protocolo}` : undefined}
-      >
+      <PageHeader titulo={os.numero} descricao={os.chamados ? `Chamado ${os.chamados.protocolo}` : undefined}>
         <OsStatusBadge status={os.status} recusada={os.assinatura_recusada} />
       </PageHeader>
 

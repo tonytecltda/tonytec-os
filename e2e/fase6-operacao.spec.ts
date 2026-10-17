@@ -55,7 +55,9 @@ test.describe("Fase 6 — notificações, auditoria e segurança", () => {
     await entrar(page, process.env.SEED_ADMIN_EMAIL!, process.env.SEED_ADMIN_PASSWORD!);
     const contador = page.getByTestId("sino-contador");
     await expect(contador).toBeVisible();
-    const antes = Number(await contador.innerText());
+    const textoAntes = await contador.innerText();
+    const saturado = textoAntes.includes("+"); // o sino mostra "99+" quando há mais de 99 não lidas
+    const antes = saturado ? 100 : Number(textoAntes);
     expect(antes).toBeGreaterThanOrEqual(1);
 
     await page.getByRole("button", { name: /^Notificações/ }).click();
@@ -72,7 +74,8 @@ test.describe("Fase 6 — notificações, auditoria e segurança", () => {
     await expect(page).toHaveURL(new RegExp(`/admin/chamados/${chamado!.id}`));
     await expect(page.getByText(`[E2E-F6 ${sufixo}] Portão não fecha`).first()).toBeVisible();
     // contador diminui em 1 (ou some, se era a única)
-    if (antes > 1) await expect(page.getByTestId("sino-contador")).toHaveText(String(antes - 1));
+    if (saturado) await expect(page.getByTestId("sino-contador")).toBeVisible();
+    else if (antes > 1) await expect(page.getByTestId("sino-contador")).toHaveText(String(antes - 1));
     else await expect(page.getByTestId("sino-contador")).toHaveCount(0);
 
     const { data: eu } = await sa

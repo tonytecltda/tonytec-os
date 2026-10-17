@@ -94,7 +94,7 @@ export default async function PortalChamadoPage({ params }: PageProps<"/portal/c
                 {ordens.map((o) => (
                   <div key={o.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-3 text-sm">
                     <Link href={`/portal/os/${o.id}`} className="font-medium hover:underline">
-                      OS {o.numero}
+                      {o.numero}
                     </Link>
                     <OsStatusBadge status={o.status} recusada={o.assinatura_recusada} />
                     <span className="flex-1" />

@@ -1,3 +1,4 @@
+import { Filtros } from "@/components/data/filtros";
 import Link from "next/link";
 import { Download, FileSignature, Plus } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
@@ -77,8 +78,7 @@ export default async function OsAdminPage({ searchParams }: PageProps<"/admin/os
           </Link>
         </Button>
       </PageHeader>
-      <div className="mb-4 flex flex-wrap gap-2">
-        <SearchInput placeholder="Nº da OS ou protocolo" />
+      <Filtros busca={<SearchInput placeholder="Nº da OS ou protocolo" />}>
         <FilterSelect
           param="situacao"
           padrao="abertas"
@@ -100,7 +100,7 @@ export default async function OsAdminPage({ searchParams }: PageProps<"/admin/os
         />
         <ClienteFilter clientes={clientes} />
         <PeriodoFilter />
-      </div>
+      </Filtros>
 
       {error ? (
         <p className="text-destructive text-sm">Não foi possível carregar as OS.</p>

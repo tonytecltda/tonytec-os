@@ -61,7 +61,7 @@ async function AtendimentoAcoes({
       {!encerrado ? <StatusAcoesTecnico chamadoId={chamadoId} status={status} /> : null}
       {encerradas.map((o) => (
         <div key={o.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-3 text-sm">
-          <span className="font-medium">OS {o.numero}</span>
+          <span className="font-medium">{o.numero}</span>
           <OsStatusBadge status={o.status} recusada={o.assinatura_recusada} />
           <span className="flex-1" />
           {o.pdf_path ? (

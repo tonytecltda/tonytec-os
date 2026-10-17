@@ -14,13 +14,13 @@ export function StatCard({
 }) {
   return (
     <Card>
-      <CardContent className="flex items-start justify-between gap-4">
+      <CardContent className="flex items-start justify-between gap-2 md:gap-4">
         <div className="min-w-0">
-          <p className="text-muted-foreground text-sm">{titulo}</p>
-          <p className="mt-1 text-3xl font-semibold tracking-tight tabular-nums">{valor}</p>
+          <p className="text-muted-foreground text-xs md:text-sm">{titulo}</p>
+          <p className="mt-1 text-2xl font-semibold tracking-tight tabular-nums md:text-3xl">{valor}</p>
           {detalhe ? <p className="text-muted-foreground mt-1 text-xs">{detalhe}</p> : null}
         </div>
-        <div className="bg-primary/10 text-primary grid size-10 shrink-0 place-items-center rounded-lg">
+        <div className="bg-primary/10 text-primary hidden size-10 shrink-0 place-items-center rounded-lg sm:grid">
           <Icon className="size-5" />
         </div>
       </CardContent>

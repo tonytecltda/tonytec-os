@@ -3,14 +3,50 @@
 import * as React from "react"
 import { cn } from "cn"
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+/**
+ * modoMovel:
+ *  - "cartoes" (padrão): no celular cada linha vira um cartão com "rótulo: valor" (sem rolagem lateral);
+ *  - "rolagem": mantém a tabela com rolagem horizontal (relatórios com muitas colunas numéricas).
+ * Os rótulos vêm do cabeçalho da própria tabela (ver o CSS em globals.css).
+ */
+function Table({
+  className,
+  modoMovel = "cartoes",
+  ...props
+}: React.ComponentProps<"table"> & { modoMovel?: "cartoes" | "rolagem" }) {
+  const ref = React.useRef<HTMLTableElement>(null)
+
+  React.useEffect(() => {
+    const tabela = ref.current
+    if (!tabela || modoMovel !== "cartoes") return
+    const rotular = () => {
+      const ths = Array.from(tabela.querySelectorAll<HTMLElement>("thead tr:last-child > th"))
+      // Colunas só com texto para leitor de tela (ações) ficam sem rótulo visível.
+      const rotulos = ths.map((th) => (th.querySelector(".sr-only") ? "" : (th.textContent ?? "").trim()))
+      tabela.querySelectorAll<HTMLElement>("tbody > tr").forEach((tr) => {
+        const celulas = Array.from(tr.children) as HTMLElement[]
+        if (celulas.length !== ths.length) return
+        celulas.forEach((td, i) => {
+          if (td.dataset.label !== rotulos[i]) td.dataset.label = rotulos[i]
+        })
+      })
+    }
+    rotular()
+    const observador = new MutationObserver(rotular)
+    observador.observe(tabela, { childList: true, subtree: true })
+    return () => observador.disconnect()
+  }, [modoMovel])
+
   return (
     <div
       data-slot="table-container"
+      data-modo-movel={modoMovel}
       className="relative w-full overflow-x-auto"
     >
       <table
+        ref={ref}
         data-slot="table"
+        data-modo-movel={modoMovel}
         className={cn("w-full caption-bottom text-sm", className)}
         {...props}
       />

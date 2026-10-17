@@ -42,12 +42,10 @@ export default async function HistoricoTecnicoPage({ searchParams }: PageProps<"
                 <Card>
                   <CardContent className="flex flex-wrap items-center gap-3">
                     <Link href={`/tecnico/os/${o.id}/assinatura`} className="min-w-0 flex-1">
-                      <div className="font-medium">
-                        OS {o.numero}
-                        {o.chamados ? (
-                          <span className="text-muted-foreground font-normal"> · {o.chamados.protocolo}</span>
-                        ) : null}
-                      </div>
+                      <div className="font-medium">{o.numero}</div>
+                      {o.chamados ? (
+                        <div className="text-muted-foreground font-mono text-xs">{o.chamados.protocolo}</div>
+                      ) : null}
                       <div className="text-muted-foreground truncate text-xs">
                         {o.clientes?.nome_fantasia || o.clientes?.razao_social}
                         {o.chamados?.titulo ? ` — ${o.chamados.titulo}` : ""} ·{" "}

@@ -48,7 +48,7 @@ export default async function PortalOsPage({ searchParams }: PageProps<"/portal/
                   <CardContent className="flex flex-wrap items-center gap-3">
                     <Link href={`/portal/os/${o.id}`} className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-medium">OS {o.numero}</span>
+                        <span className="font-medium">{o.numero}</span>
                         <OsStatusBadge status={o.status} recusada={o.assinatura_recusada} />
                       </div>
                       <div className="text-muted-foreground truncate text-xs">

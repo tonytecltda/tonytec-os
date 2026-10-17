@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useSyncExternalStore, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -144,8 +144,8 @@ function Dia({
       ref={setNodeRef}
       aria-label={`${nomeDiaCurto(dia)} ${dia.split("-").reverse().slice(0, 2).join("/")}`}
       className={cn(
-        "flex min-h-24 flex-col gap-1.5 rounded-lg border p-1.5 transition-colors",
-        visao === "semana" && "min-h-56",
+        "flex flex-col gap-1.5 rounded-lg border p-1.5 transition-colors",
+        visao === "semana" ? "md:min-h-56" : "min-h-24",
         foraDoMes && "bg-muted/30",
         ehHoje && "border-primary",
         isOver && "bg-primary/10 border-primary",
@@ -170,6 +170,9 @@ function Dia({
         {eventos.slice(0, limite).map((e) => (
           <Arrastavel key={e.id} e={e} compacto={visao === "mes"} onAbrir={onAbrir} />
         ))}
+        {!eventos.length ? (
+          <span className="text-muted-foreground px-1 py-0.5 text-[11px] md:hidden">Sem visitas</span>
+        ) : null}
         {eventos.length > limite ? (
           <span className="text-muted-foreground px-1 text-[11px]">+{eventos.length - limite} mais</span>
         ) : null}
@@ -177,6 +180,96 @@ function Dia({
     </section>
   );
 }
+
+/** true quando a tela é larga (desktop). No servidor e no 1º render: celular. */
+function useTelaLarga() {
+  return useSyncExternalStore(
+    (cb) => {
+      const m = window.matchMedia("(min-width: 1024px)");
+      m.addEventListener("change", cb);
+      return () => m.removeEventListener("change", cb);
+    },
+    () => window.matchMedia("(min-width: 1024px)").matches,
+    () => false,
+  );
+}
+
+const INICIAIS_SEMANA = ["S", "T", "Q", "Q", "S", "S", "D"];
+
+/** Mês no celular: mini calendário (toque no dia) + lista do dia escolhido. */
+function MiniMes({
+  dias,
+  mesRef,
+  hoje,
+  eventos,
+  selecionado,
+  onSelecionar,
+}: {
+  dias: string[];
+  mesRef: string;
+  hoje: string;
+  eventos: EventoAgenda[];
+  selecionado: string;
+  onSelecionar: (dia: string) => void;
+}) {
+  return (
+    <div className="rounded-lg border p-2" role="group" aria-label="Calendário do mês">
+      <div className="text-muted-foreground mb-1 grid grid-cols-7 text-center text-[11px] font-medium">
+        {INICIAIS_SEMANA.map((l, i) => (
+          <span key={i}>{l}</span>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {dias.map((dia) => {
+          const doDia = eventos.filter((e) => e.dia === dia);
+          const ativo = dia === selecionado;
+          return (
+            <button
+              key={dia}
+              type="button"
+              onClick={() => onSelecionar(dia)}
+              aria-pressed={ativo}
+              aria-label={`${nomeDiaCurto(dia)} ${diaDoMes(dia)}: ${doDia.length ? `${doDia.length} visita(s)` : "sem visitas"}`}
+              className={cn(
+                "flex min-h-12 flex-col items-center justify-start gap-1 rounded-md border border-transparent pt-1.5 text-sm outline-none focus-visible:ring-3",
+                !dia.startsWith(mesRef) && "text-muted-foreground/60",
+                dia === hoje && "border-primary",
+                ativo && "bg-primary text-primary-foreground",
+              )}
+            >
+              <span className="leading-none tabular-nums">{diaDoMes(dia)}</span>
+              {doDia.length ? (
+                <span className="flex items-center gap-0.5" aria-hidden>
+                  {doDia.slice(0, 3).map((e) => (
+                    <span
+                      key={e.id}
+                      className={cn(
+                        "size-1.5 rounded-full",
+                        ativo ? "bg-primary-foreground" : PONTOS[e.cor % PONTOS.length],
+                      )}
+                    />
+                  ))}
+                  {doDia.length > 3 ? <span className="text-[9px] leading-none">+</span> : null}
+                </span>
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+const PONTOS = [
+  "bg-blue-500",
+  "bg-emerald-500",
+  "bg-amber-500",
+  "bg-violet-500",
+  "bg-rose-500",
+  "bg-cyan-500",
+  "bg-orange-500",
+  "bg-lime-600",
+];
 
 /** Calendário (semana ou mês): arraste um chamado para outro dia ou clique para escolher o horário. */
 export function AgendaGrade({
@@ -199,6 +292,8 @@ export function AgendaGrade({
   const [editando, setEditando] = useState<EventoAgenda | null>(null);
   const [horario, setHorario] = useState("");
   const [pending, startTransition] = useTransition();
+  const larga = useTelaLarga();
+  const [diaSel, setDiaSel] = useState(dias.includes(hoje) ? hoje : `${mesRef}-01`);
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
@@ -240,31 +335,51 @@ export function AgendaGrade({
       }}
     >
       <div className="grid gap-4 xl:grid-cols-[1fr_260px]">
-        <div
-          className={cn(
-            "grid gap-1.5",
-            visao === "semana"
-              ? "sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7"
-              : "grid-cols-1 sm:grid-cols-7",
-          )}
-        >
-          {dias.map((dia) => (
-            <Dia
-              key={dia}
-              dia={dia}
+        {visao === "mes" && !larga ? (
+          <div className="grid gap-3">
+            <MiniMes
+              dias={dias}
+              mesRef={mesRef}
               hoje={hoje}
-              visao={visao}
-              foraDoMes={visao === "mes" && !dia.startsWith(mesRef)}
-              eventos={eventos.filter((e) => e.dia === dia)}
+              eventos={eventos}
+              selecionado={diaSel}
+              onSelecionar={setDiaSel}
+            />
+            <Dia
+              key={diaSel}
+              dia={diaSel}
+              hoje={hoje}
+              visao="semana"
+              eventos={eventos.filter((e) => e.dia === diaSel)}
               onAbrir={abrir}
             />
-          ))}
-        </div>
+          </div>
+        ) : (
+          <div
+            className={cn(
+              "grid gap-1.5",
+              visao === "semana" ? "md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7" : "grid-cols-7",
+            )}
+          >
+            {dias.map((dia) => (
+              <Dia
+                key={dia}
+                dia={dia}
+                hoje={hoje}
+                visao={visao}
+                foraDoMes={visao === "mes" && !dia.startsWith(mesRef)}
+                eventos={eventos.filter((e) => e.dia === dia)}
+                onAbrir={abrir}
+              />
+            ))}
+          </div>
+        )}
 
         <aside aria-label="Chamados sem agendamento" className="rounded-lg border p-2 xl:self-start">
           <h2 className="mb-2 px-1 text-sm font-semibold">Sem agendamento ({semAgenda.length})</h2>
           <p className="text-muted-foreground mb-2 px-1 text-xs">
-            Arraste para um dia do calendário (horário padrão 09:00).
+            Toque no chamado para escolher a data e a hora (no computador, também dá para arrastar para um
+            dia; horário padrão 09:00).
           </p>
           <div className="grid max-h-[28rem] gap-1.5 overflow-y-auto">
             {semAgenda.map((e) => (

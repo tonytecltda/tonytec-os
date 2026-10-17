@@ -39,10 +39,7 @@ export default async function OsAdminDetalhePage({ params }: PageProps<"/admin/o
           <ArrowLeft /> Ordens de serviço
         </Link>
       </Button>
-      <PageHeader
-        titulo={`OS ${os.numero}`}
-        descricao={`${cliente} · ${TIPO_ATENDIMENTO[os.tipo_atendimento]}`}
-      >
+      <PageHeader titulo={os.numero} descricao={`${cliente} · ${TIPO_ATENDIMENTO[os.tipo_atendimento]}`}>
         <OsStatusBadge status={os.status} recusada={os.assinatura_recusada} />
       </PageHeader>
 

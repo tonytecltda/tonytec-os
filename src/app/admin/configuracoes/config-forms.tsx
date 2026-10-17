@@ -342,10 +342,13 @@ export function SlaPadraoForm({ inicial }: { inicial: ConfigValor<"sla_padrao"> 
               <span>Solução</span>
             </div>
             {prioridades.map((p) => (
-              <div key={p} className="grid items-start gap-2 sm:grid-cols-[1fr_1fr_1fr] sm:gap-3">
-                <Label className="pt-2">{PRIORIDADE[p]}</Label>
+              <div key={p} className="grid grid-cols-2 items-start gap-2 sm:grid-cols-[1fr_1fr_1fr] sm:gap-3">
+                <Label className="col-span-2 pt-2 sm:col-span-1">{PRIORIDADE[p]}</Label>
                 {(["resposta", "solucao"] as const).map((campo) => (
                   <div key={campo} className="grid gap-1">
+                    <span className="text-muted-foreground text-xs sm:hidden">
+                      {campo === "resposta" ? "Primeira resposta" : "Solução"}
+                    </span>
                     <Controller
                       control={form.control}
                       name={`${p}.${campo}`}

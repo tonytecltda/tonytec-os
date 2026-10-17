@@ -1,3 +1,4 @@
+import { Filtros } from "@/components/data/filtros";
 import { ShieldCheck } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -96,7 +97,7 @@ export default async function AuditoriaPage({ searchParams }: PageProps<"/admin/
         titulo="Auditoria"
         descricao="Quem fez o quê, e quando: cadastros, contratos, usuários, cobrança e ciclo de vida das OS. Registros não podem ser apagados."
       />
-      <div className="mb-4 flex flex-wrap gap-2">
+      <Filtros>
         <FilterSelect
           param="tabela"
           placeholder="Área"
@@ -124,7 +125,7 @@ export default async function AuditoriaPage({ searchParams }: PageProps<"/admin/
           ]}
         />
         <PeriodoFilter rotuloDe="Registrado a partir de" rotuloAte="Registrado até" />
-      </div>
+      </Filtros>
 
       {error ? (
         <p className="text-destructive text-sm">Não foi possível carregar a auditoria.</p>

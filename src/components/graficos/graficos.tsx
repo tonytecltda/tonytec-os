@@ -80,7 +80,9 @@ export function GraficoBarras({
               <XAxis
                 type="number"
                 tick={EIXO}
-                tickFormatter={(v) => (formato === "moeda" ? `${Math.round(Number(v) / 1000)}k` : fmtNum(v))}
+                tickFormatter={(v) =>
+                  formato === "moeda" && Number(v) >= 1000 ? `${Math.round(Number(v) / 1000)}k` : fmtNum(v)
+                }
                 allowDecimals={false}
               />
               <YAxis
@@ -98,7 +100,9 @@ export function GraficoBarras({
               <YAxis
                 tick={EIXO}
                 allowDecimals={false}
-                tickFormatter={(v) => (formato === "moeda" ? `${Math.round(Number(v) / 1000)}k` : fmtNum(v))}
+                tickFormatter={(v) =>
+                  formato === "moeda" && Number(v) >= 1000 ? `${Math.round(Number(v) / 1000)}k` : fmtNum(v)
+                }
               />
             </>
           )}

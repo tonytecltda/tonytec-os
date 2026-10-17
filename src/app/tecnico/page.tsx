@@ -75,7 +75,7 @@ export default async function TecnicoHome() {
               <FileSignature className="text-primary size-5 shrink-0" />
               <div className="min-w-0 flex-1">
                 <div className="font-medium">
-                  OS {o.numero}
+                  {o.numero}
                   {o.status === "aguardando_assinatura"
                     ? " · aguardando assinatura"
                     : ` · ${TIPO_ATENDIMENTO[o.tipo_atendimento]}`}

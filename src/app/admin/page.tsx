@@ -117,7 +117,7 @@ export default async function AdminDashboard({ searchParams }: PageProps<"/admin
       </PageHeader>
 
       {/* Atenção agora (não depende do período) */}
-      <section aria-label="Atenção agora" className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section aria-label="Atenção agora" className="mb-6 grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
         <CardLink href="/admin/chamados?view=lista&status=aberto">
           <StatCard titulo="Novos (aguardando triagem)" valor={novos} icon={Inbox} />
         </CardLink>
@@ -151,7 +151,7 @@ export default async function AdminDashboard({ searchParams }: PageProps<"/admin
       <h2 className="text-muted-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
         Chamados no período
       </h2>
-      <section className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="mb-6 grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
         <StatCard
           titulo="Abertos"
           valor={d.chamados.abertos}
@@ -173,7 +173,7 @@ export default async function AdminDashboard({ searchParams }: PageProps<"/admin
         />
       </section>
 
-      <section className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="mb-6 grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
         <StatCard
           titulo="Tempo médio de 1ª resposta"
           valor={horasLegivel(d.tempos.resposta_h)}
@@ -199,7 +199,7 @@ export default async function AdminDashboard({ searchParams }: PageProps<"/admin
       <h2 className="text-muted-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
         Ordens de serviço e faturamento
       </h2>
-      <section className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="mb-6 grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
         <CardLink href="/admin/os?situacao=encerradas">
           <StatCard
             titulo="OS concluídas"

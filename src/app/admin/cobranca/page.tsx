@@ -1,3 +1,4 @@
+import { Filtros } from "@/components/data/filtros";
 import Link from "next/link";
 import { CalendarCheck, Download, FileSpreadsheet, Receipt } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
@@ -71,7 +72,7 @@ export default async function CobrancaPage({ searchParams }: PageProps<"/admin/c
         </Button>
       </PageHeader>
 
-      <div className="mb-4 grid gap-4 sm:grid-cols-3">
+      <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 [&>*:last-child]:col-span-2 sm:[&>*:last-child]:col-span-1">
         <StatCard
           titulo="A faturar"
           valor={formatBRL(totais.aFaturar)}
@@ -92,7 +93,7 @@ export default async function CobrancaPage({ searchParams }: PageProps<"/admin/c
         />
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-2">
+      <Filtros>
         <FilterSelect
           param="faturamento"
           padrao="a_faturar"
@@ -114,7 +115,9 @@ export default async function CobrancaPage({ searchParams }: PageProps<"/admin/c
         />
         <ClienteFilter clientes={clientes} />
         <PeriodoFilter />
-        <span className="flex-1" />
+      </Filtros>
+
+      <div className="mb-4 flex justify-end gap-2">
         <Button variant="outline" asChild>
           <a href={exportar("csv")}>
             <Download /> CSV

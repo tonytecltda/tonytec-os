@@ -143,7 +143,7 @@ export function AppShell({
           <UserMenu nome={user.nome} email={user.email} papel={user.papel} />
         </header>
 
-        <main className="flex-1 p-4 lg:p-6">{children}</main>
+        <main className="flex-1 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:p-6">{children}</main>
       </div>
     </div>
   );

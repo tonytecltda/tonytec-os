@@ -36,7 +36,7 @@ export default async function TecnicoOsPage({ params }: PageProps<"/tecnico/os/[
         </Link>
       </Button>
       <PageHeader
-        titulo={`OS ${os.numero}`}
+        titulo={os.numero}
         descricao={[
           os.clientes?.nome_fantasia || os.clientes?.razao_social,
           os.unidades ? `${os.unidades.nome} · ${enderecoCompleto(os.unidades)}` : null,

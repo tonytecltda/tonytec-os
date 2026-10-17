@@ -44,7 +44,7 @@ export default async function AssinaturaOsPage({ params }: PageProps<"/tecnico/o
             <ArrowLeft /> Voltar
           </Link>
         </Button>
-        <PageHeader titulo={`OS ${os.numero}`}>
+        <PageHeader titulo={os.numero}>
           <OsStatusBadge status={os.status} recusada={os.assinatura_recusada} />
         </PageHeader>
         <Alert className="mb-4 border-emerald-500/40">
@@ -109,7 +109,7 @@ export default async function AssinaturaOsPage({ params }: PageProps<"/tecnico/o
         </Link>
       </Button>
       <PageHeader
-        titulo={`Assinatura da OS ${os.numero}`}
+        titulo={`Assinatura da ${os.numero}`}
         descricao="Confira o resumo com o cliente antes de assinar."
       >
         <VoltarEdicaoButton osId={id} destino={`/tecnico/os/${id}`} />

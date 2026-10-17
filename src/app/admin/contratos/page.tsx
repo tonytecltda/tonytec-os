@@ -1,3 +1,4 @@
+import { Filtros } from "@/components/data/filtros";
 import Link from "next/link";
 import { AlertTriangle, Plus, ScrollText } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
@@ -117,8 +118,7 @@ export default async function ContratosPage({ searchParams }: PageProps<"/admin/
         </Alert>
       ) : null}
 
-      <div className="mb-4 flex flex-col gap-2 sm:flex-row">
-        <SearchInput placeholder="Buscar por número ou cliente" />
+      <Filtros busca={<SearchInput placeholder="Buscar por número ou cliente" />}>
         <FilterSelect
           param="status"
           padrao="ativo"
@@ -138,7 +138,7 @@ export default async function ContratosPage({ searchParams }: PageProps<"/admin/
             { value: "30", label: "Vence em 30 dias" },
           ]}
         />
-      </div>
+      </Filtros>
 
       {error ? (
         <p className="text-destructive text-sm">Não foi possível carregar os contratos.</p>

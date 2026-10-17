@@ -237,7 +237,7 @@ test.describe("Fase 3 — OS e assinatura", () => {
     const cli = await ctx.newPage();
     await entrar(cli, DEMO.users.clienteA.email, SENHA);
     await cli.goto("/portal/os");
-    await expect(cli.getByRole("link", { name: /OS OS-\d{4}-\d{6}/ }).first()).toBeVisible();
+    await expect(cli.getByRole("link", { name: /OS-\d{4}-\d{6}/ }).first()).toBeVisible();
     await cli.goto(`/portal/chamados/${chamado.id}`);
     await cli.getByRole("radio", { name: /5 estrelas/ }).click();
     await cli.getByRole("button", { name: "Enviar avaliação" }).click();

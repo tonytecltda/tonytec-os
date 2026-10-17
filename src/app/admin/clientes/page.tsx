@@ -1,3 +1,4 @@
+import { Filtros } from "@/components/data/filtros";
 import Link from "next/link";
 import { ChevronRight, Plus, Users } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
@@ -60,8 +61,7 @@ export default async function ClientesPage({ searchParams }: PageProps<"/admin/c
         </Button>
       </PageHeader>
 
-      <div className="mb-4 flex flex-col gap-2 sm:flex-row">
-        <SearchInput placeholder="Buscar por nome ou CPF/CNPJ" />
+      <Filtros busca={<SearchInput placeholder="Buscar por nome ou CPF/CNPJ" />}>
         <FilterSelect
           param="status"
           padrao="ativos"
@@ -72,7 +72,7 @@ export default async function ClientesPage({ searchParams }: PageProps<"/admin/c
             { value: "todos", label: "Todos" },
           ]}
         />
-      </div>
+      </Filtros>
 
       {error ? (
         <p className="text-destructive text-sm">Não foi possível carregar os clientes.</p>

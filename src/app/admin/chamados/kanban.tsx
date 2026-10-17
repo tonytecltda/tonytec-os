@@ -121,7 +121,7 @@ function Coluna({ status, itens }: { status: Status; itens: CardChamado[] }) {
       ref={setNodeRef}
       aria-label={CHAMADO_STATUS[status]}
       className={cn(
-        "bg-muted/40 flex w-72 shrink-0 flex-col gap-2 rounded-xl border p-2 transition-colors",
+        "bg-muted/40 flex w-[82vw] max-w-80 shrink-0 snap-center flex-col gap-2 rounded-xl border p-2 transition-colors sm:w-72 sm:snap-align-none",
         isOver && "border-primary bg-primary/5",
       )}
     >
@@ -197,7 +197,7 @@ export function KanbanChamados({ chamados }: { chamados: CardChamado[] }) {
         },
       }}
     >
-      <div className="-mx-4 overflow-x-auto px-4 pb-4 lg:-mx-6 lg:px-6">
+      <div className="-mx-4 snap-x snap-proximity overflow-x-auto px-4 pb-4 lg:-mx-6 lg:px-6">
         <div className="flex min-w-max items-start gap-3">
           {COLUNAS.map((status) => (
             <Coluna key={status} status={status} itens={itens.filter((c) => c.status === status)} />

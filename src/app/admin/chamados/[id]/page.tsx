@@ -148,7 +148,7 @@ export default async function ChamadoAdminPage({ params }: PageProps<"/admin/cha
                     className="hover:bg-muted/50 flex items-center gap-2 rounded-lg border p-2 text-sm"
                   >
                     <FileSignature className="text-primary size-4" />
-                    <span className="font-medium">OS {o.numero}</span>
+                    <span className="font-medium">{o.numero}</span>
                     <span className="flex-1" />
                     <OsStatusBadge status={o.status} recusada={o.assinatura_recusada} />
                   </Link>

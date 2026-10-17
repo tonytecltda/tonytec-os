@@ -1,3 +1,4 @@
+import { Filtros } from "@/components/data/filtros";
 import Link from "next/link";
 import { ClipboardList, Columns3, List, Plus } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
@@ -129,8 +130,7 @@ export default async function ChamadosAdminPage({ searchParams }: PageProps<"/ad
         </Button>
       </PageHeader>
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        <SearchInput placeholder="Protocolo ou título" />
+      <Filtros busca={<SearchInput placeholder="Protocolo ou título" />}>
         {view === "lista" ? (
           <FilterSelect
             param="status"
@@ -175,7 +175,7 @@ export default async function ChamadosAdminPage({ searchParams }: PageProps<"/ad
         />
         <ClienteFilter clientes={clientes} />
         <PeriodoFilter />
-      </div>
+      </Filtros>
 
       {error ? (
         <p className="text-destructive text-sm">Não foi possível carregar os chamados.</p>

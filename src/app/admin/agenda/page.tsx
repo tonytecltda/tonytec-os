@@ -82,7 +82,7 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
     <>
       <PageHeader
         titulo="Agenda dos técnicos"
-        descricao="Arraste um chamado para outro dia para reagendar a visita."
+        descricao="No computador, arraste o chamado para outro dia. No celular, toque nele para escolher a data e a hora."
       >
         <div className="bg-muted flex rounded-lg p-0.5" role="group" aria-label="Visualização">
           {(["semana", "mes"] as const).map((v) => (
@@ -91,7 +91,7 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
               href={link(data, v)}
               aria-current={visao === v ? "page" : undefined}
               className={cn(
-                "inline-flex h-7 items-center rounded-md px-2.5 text-sm",
+                "inline-flex h-9 items-center rounded-md px-3 text-sm md:h-7 md:px-2.5",
                 visao === v
                   ? "bg-background font-medium shadow-xs"
                   : "text-muted-foreground hover:text-foreground",
@@ -129,7 +129,7 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
             <CalendarDays /> Hoje
           </Link>
         </Button>
-        <h2 className="mx-2 text-base font-semibold capitalize">
+        <h2 className="mx-2 text-base font-semibold first-letter:uppercase">
           {visao === "semana" ? tituloSemana(grade.dias) : nomeMes(mesRef)}
         </h2>
         <span className="flex-1" />

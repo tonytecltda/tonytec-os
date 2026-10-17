@@ -434,7 +434,7 @@ export function OsEditor({
       </Card>
 
       {/* Barra fixa: situação do salvamento + concluir */}
-      <div className="bg-background/95 supports-[backdrop-filter]:bg-background/80 fixed inset-x-0 bottom-0 z-30 border-t px-4 py-3 backdrop-blur lg:left-64">
+      <div className="bg-background/95 supports-[backdrop-filter]:bg-background/80 fixed inset-x-0 bottom-0 z-30 border-t px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:left-64">
         <div className="mx-auto flex max-w-5xl items-center gap-3">
           <IndicadorSalvamento estado={estado} />
           <div className="flex-1" />

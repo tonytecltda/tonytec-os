@@ -133,3 +133,90 @@
     @apply font-sans;
   }
 }
+
+/* ------------------------------------------------------------------ celular
+   Grades sem colunas definidas usam 1 coluna que PODE encolher (evita que um campo largo
+   estoure o cartão); `grid-cols-*` e variantes responsivas continuam valendo. */
+@layer base {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Tabelas viram cartões abaixo de 768 px: sem rolagem lateral e sem colunas escondidas. */
+@media (max-width: 767.98px) {
+  div:has(> [data-slot="table-container"][data-modo-movel="cartoes"]) {
+    border-color: transparent;
+    background: transparent;
+    overflow: visible;
+  }
+  [data-slot="table-container"][data-modo-movel="cartoes"] {
+    overflow: visible;
+  }
+  table[data-modo-movel="cartoes"] {
+    display: block;
+  }
+  table[data-modo-movel="cartoes"] thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  table[data-modo-movel="cartoes"] tbody {
+    display: grid;
+    gap: 0.5rem;
+  }
+  table[data-modo-movel="cartoes"] tbody > tr {
+    display: grid;
+    gap: 0.375rem;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background: var(--card);
+  }
+  table[data-modo-movel="cartoes"] tbody > tr:hover {
+    background: var(--card);
+  }
+  table[data-modo-movel="cartoes"] tbody > tr > td {
+    display: flex !important; /* mostra também as colunas que ficam escondidas em telas médias */
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-width: 0;
+    padding: 0;
+    text-align: right;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  table[data-modo-movel="cartoes"] tbody > tr > td:first-child {
+    display: block !important;
+    text-align: left;
+    font-weight: 500;
+  }
+  table[data-modo-movel="cartoes"] tbody > tr > td[data-label]:not([data-label=""])::before {
+    content: attr(data-label);
+    flex: none;
+    max-width: 45%;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--muted-foreground);
+  }
+  table[data-modo-movel="cartoes"] tbody > tr > td:first-child::before {
+    display: none;
+  }
+  table[data-modo-movel="cartoes"] tbody > tr > td[data-label=""]:not(:first-child) {
+    justify-content: flex-end;
+  }
+  table[data-modo-movel="cartoes"] tbody > tr > td[colspan] {
+    display: block !important;
+    text-align: center;
+  }
+}
+
+/* Celulares com "notch": respeita as áreas seguras nas laterais (modo paisagem). */
+body {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
