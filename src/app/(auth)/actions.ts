@@ -40,12 +40,17 @@ export async function signIn(_prev: FormState, formData: FormData): Promise<Form
     password: parsed.data.password,
   });
   if (error || !data.user) {
-    if (error?.code !== "user_banned") {
+    if (error?.code === "user_banned") return { error: "Seu acesso está desativado. Fale com a Tonytec." };
+    // Só credenciais erradas contam para o bloqueio; falha de configuração/servidor não é culpa do usuário.
+    if (error?.code === "invalid_credentials" || error?.code === "user_not_found") {
       await dentroDoLimite("login-email", parsed.data.email, LIMITES.loginEmail);
       await dentroDoLimite("login-ip", ip, LIMITES.loginIp);
+      return { error: "E-mail ou senha incorretos." };
     }
-    if (error?.code === "user_banned") return { error: "Seu acesso está desativado. Fale com a Tonytec." };
-    return { error: "E-mail ou senha incorretos." };
+    console.error("[login] falha inesperada do Supabase Auth:", error?.status, error?.code, error?.message);
+    return {
+      error: `Não foi possível entrar agora (${error?.code ?? error?.status ?? "erro"}). Tente de novo; se persistir, avise a Tonytec.`,
+    };
   }
 
   const { data: profile } = await supabase
