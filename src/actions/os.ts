@@ -18,6 +18,7 @@ import {
   hashAtualOs,
   registrarAssinatura,
 } from "@/lib/os-encerramento";
+import { LIMITES, MSG_MUITAS_TENTATIVAS, dentroDoLimite, ipDoCliente } from "@/lib/rate-limit";
 import { criarTokenAssinatura, registrarTentativaToken, validarTokenAssinatura } from "@/lib/os-tokens";
 import {
   ajusteVisitaSchema,
@@ -619,6 +620,9 @@ export async function assinarPorLink(
   token: string,
   input: unknown,
 ): Promise<ActionResult<{ pdf: boolean; pdfUrl: string | null }>> {
+  if (!(await dentroDoLimite("assinar-enviar", await ipDoCliente(), LIMITES.linkAssinaturaEnviar))) {
+    return fail(MSG_MUITAS_TENTATIVAS);
+  }
   const v = await validarTokenAssinatura(token);
   if (!v.ok) return fail(v.erro);
   await registrarTentativaToken(v.token.id, v.token.tentativas);

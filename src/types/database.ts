@@ -1159,6 +1159,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      checar_rate_limit: {
+        Args: { p_chave: string; p_janela_seg: number; p_max: number }
+        Returns: boolean
+      }
       consumo_contrato_mes: {
         Args: { p_contrato_id: string; p_mes: string }
         Returns: {
@@ -1169,6 +1173,10 @@ export type Database = {
           visitas_inclusas: number
           visitas_usadas: number
         }[]
+      }
+      rate_limit_bloqueado: {
+        Args: { p_chave: string; p_janela_seg: number; p_max: number }
+        Returns: boolean
       }
       reabrir_os: {
         Args: { p_motivo: string; p_os_id: string }

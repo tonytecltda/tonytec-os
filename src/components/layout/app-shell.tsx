@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { NAV, type Area, type NavItem } from "./nav-config";
+import { SinoNotificacoes } from "./sino-notificacoes";
 import { UserMenu } from "./user-menu";
 
 type ShellUser = { nome: string; email: string; papel: string };
@@ -138,6 +139,7 @@ export function AppShell({
           </div>
           <div className="flex-1" />
           <span className="text-muted-foreground hidden truncate text-sm sm:block">{user.nome}</span>
+          <SinoNotificacoes />
           <UserMenu nome={user.nome} email={user.email} papel={user.papel} />
         </header>
 

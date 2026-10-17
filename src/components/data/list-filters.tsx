@@ -120,7 +120,13 @@ export function ClienteFilter({ clientes, param = "cliente" }: { clientes: Opcao
 }
 
 /** Período (?de=aaaa-mm-dd&ate=aaaa-mm-dd). */
-export function PeriodoFilter() {
+export function PeriodoFilter({
+  rotuloDe = "Abertos a partir de",
+  rotuloAte = "Abertos até",
+}: {
+  rotuloDe?: string;
+  rotuloAte?: string;
+}) {
   const { searchParams, setParams } = useSetParams();
   const de = searchParams.get("de") ?? "";
   const ate = searchParams.get("ate") ?? "";
@@ -131,7 +137,7 @@ export function PeriodoFilter() {
         value={de}
         max={ate || undefined}
         onChange={(e) => setParams({ de: e.target.value })}
-        aria-label="Abertos a partir de"
+        aria-label={rotuloDe}
         className="w-full sm:w-36"
       />
       <span className="text-muted-foreground text-xs">até</span>
@@ -140,7 +146,7 @@ export function PeriodoFilter() {
         value={ate}
         min={de || undefined}
         onChange={(e) => setParams({ ate: e.target.value })}
-        aria-label="Abertos até"
+        aria-label={rotuloAte}
         className="w-full sm:w-36"
       />
     </div>

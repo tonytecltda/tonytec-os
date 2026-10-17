@@ -1,6 +1,7 @@
 import { LinkIcon } from "lucide-react";
 import { assinarPorLink } from "@/actions/os";
 import { dadosCompletosOs, resumoDeDadosCompletos } from "@/lib/os";
+import { LIMITES, MSG_MUITAS_TENTATIVAS, dentroDoLimite, ipDoCliente } from "@/lib/rate-limit";
 import { validarTokenAssinatura } from "@/lib/os-tokens";
 import { formatDataHora } from "@/lib/format";
 import { EmptyState } from "@/components/empty-state";
@@ -12,6 +13,13 @@ export const maxDuration = 60;
 
 export default async function AssinarPorLinkPage({ params }: PageProps<"/assinar/[token]">) {
   const { token } = await params;
+  if (!(await dentroDoLimite("assinar-ver", await ipDoCliente(), LIMITES.linkAssinaturaVer))) {
+    return (
+      <div className="pt-8">
+        <EmptyState icon={LinkIcon} titulo="Muitas tentativas" descricao={MSG_MUITAS_TENTATIVAS} />
+      </div>
+    );
+  }
   const v = await validarTokenAssinatura(token);
   if (!v.ok) {
     return (

@@ -44,7 +44,7 @@ export const NAV: Record<Area, { titulo: string; itens: NavItem[] }> = {
       { href: "/admin/relatorios", label: "Relatórios", icon: BarChart3 },
       { href: "/admin/catalogos", label: "Catálogos", icon: BookOpen },
       { href: "/admin/configuracoes", label: "Configurações", icon: Settings },
-      { href: "/admin/auditoria", label: "Auditoria", icon: ShieldCheck, fase: 6 },
+      { href: "/admin/auditoria", label: "Auditoria", icon: ShieldCheck },
     ],
   },
   tecnico: {

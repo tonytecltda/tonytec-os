@@ -17,6 +17,7 @@ const PAGINAS = {
     "/admin/relatorios/calor",
     "/admin/agenda",
     "/admin/agenda?view=mes",
+    "/admin/auditoria",
     "/admin/cobranca",
     "/admin/cobranca/fechamento",
     "/admin/catalogos",

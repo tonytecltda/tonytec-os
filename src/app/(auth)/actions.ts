@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { origemApp } from "@/lib/acesso";
+import { LIMITES, MSG_MUITAS_TENTATIVAS, dentroDoLimite, estaBloqueado, ipDoCliente } from "@/lib/rate-limit";
 import { AREA_ROLES, ROLE_HOME, isUserRole } from "@/lib/roles";
 
 export type FormState = { error?: string; success?: string } | undefined;
@@ -24,12 +25,25 @@ export async function signIn(_prev: FormState, formData: FormData): Promise<Form
   const parsed = loginSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
 
+  // Só falhas contam: por e-mail (força bruta numa conta) e por IP (varredura de contas).
+  const ip = await ipDoCliente();
+  if (
+    (await estaBloqueado("login-email", parsed.data.email, LIMITES.loginEmail)) ||
+    (await estaBloqueado("login-ip", ip, LIMITES.loginIp))
+  ) {
+    return { error: MSG_MUITAS_TENTATIVAS };
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithPassword({
     email: parsed.data.email,
     password: parsed.data.password,
   });
   if (error || !data.user) {
+    if (error?.code !== "user_banned") {
+      await dentroDoLimite("login-email", parsed.data.email, LIMITES.loginEmail);
+      await dentroDoLimite("login-ip", ip, LIMITES.loginIp);
+    }
     if (error?.code === "user_banned") return { error: "Seu acesso está desativado. Fale com a Tonytec." };
     return { error: "E-mail ou senha incorretos." };
   }
@@ -63,6 +77,12 @@ export async function requestPasswordReset(_prev: FormState, formData: FormData)
   const parsed = emailSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
 
+  const ip = await ipDoCliente();
+  const livre =
+    (await dentroDoLimite("reset-ip", ip, LIMITES.recuperarSenha)) &&
+    (await dentroDoLimite("reset-email", parsed.data.email, LIMITES.recuperarSenha));
+  if (!livre) return { error: MSG_MUITAS_TENTATIVAS };
+
   const supabase = await createClient();
   await supabase.auth.resetPasswordForEmail(parsed.data.email, {
     redirectTo: `${await origemApp()}/auth/confirm?next=/definir-senha`,
@@ -87,6 +107,10 @@ const acessoSchema = z.object({
 export async function ativarAcesso(_prev: FormState, formData: FormData): Promise<FormState> {
   const parsed = acessoSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: "Link inválido. Peça um novo link à Tonytec." };
+
+  if (!(await dentroDoLimite("acesso-ip", await ipDoCliente(), LIMITES.ativarAcesso))) {
+    return { error: MSG_MUITAS_TENTATIVAS };
+  }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.verifyOtp({ token_hash: parsed.data.token, type: parsed.data.tipo });

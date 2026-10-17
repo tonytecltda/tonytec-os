@@ -6,9 +6,11 @@ Sistema de gestão de chamados, visitas técnicas, cobrança e ordens de serviç
 - **Stack:** Next.js 16 (App Router) + TypeScript · Tailwind CSS 4 + shadcn/ui · Supabase (Postgres, Auth, Storage, RLS) · Vercel
 - **Perfis:** `admin` (`/admin`), `tecnico` (`/tecnico`, mobile-first), `cliente` (`/portal`)
 
-> Status: **Fase 5 — Dashboard, Relatórios e Agenda** concluída (KPIs com filtro de período, gráficos, 11 relatórios com exportação CSV/XLSX/PDF e agenda arrastável). Antes: **Fase 4 — Cobrança de visitas** concluída (sugestão pelo contrato, ajustes, faturamento em lote, fechamento mensal e exportações). Antes: **Fase 3 — OS e assinatura** concluída (atendimento no celular, horas, itens, fotos, assinatura na tela ou por link, PDF e bloqueio). Antes: **Fase 2 — Chamados** concluída (abertura pelo portal e pela Tonytec com anexos, Kanban,
-> atribuição, agendamento, comentários públicos/internos, histórico e SLA). Fases anteriores: cadastros e
-> fundação. Veja [docs/PREMISSAS.md](docs/PREMISSAS.md) para decisões e premissas.
+> Status: **Fases 0 a 6 concluídas** (fundação, cadastros, chamados, OS e assinatura, cobrança de visitas,
+> dashboard/relatórios/agenda, notificações, auditoria e preparação para o go-live). Decisões e premissas:
+> [docs/PREMISSAS.md](docs/PREMISSAS.md). Para entrar em produção: [docs/CHECKLIST-PRODUCAO.md](docs/CHECKLIST-PRODUCAO.md).
+> Guias de uma página por perfil: [administrador](docs/guias/administrador.md) ·
+> [técnico](docs/guias/tecnico.md) · [cliente](docs/guias/cliente.md).
 
 ---
 
@@ -108,14 +110,38 @@ Storage por URL assinada; fotos grandes são reduzidas no próprio celular antes
    para o financeiro e o botão **Marcar mês como faturado**.
 5. O **saldo do mês** (visitas e horas usadas da franquia) aparece no contrato (admin) e no portal.
 
+### Dashboard, relatórios e agenda
+
+- **Dashboard** (`/admin`): atalhos de "atenção agora" (chamados novos, sem técnico, SLA estourado, contratos a
+  vencer), KPIs, chamados em risco de SLA e gráficos. O filtro de período (hoje, 7/30 dias, mês, personalizado)
+  vale para toda a tela; o fuso é sempre o de Brasília.
+- **Relatórios** (`/admin/relatorios`): 11 relatórios (clientes mais atendidos, problemas e reincidência,
+  produtividade por técnico, SLA, faturamento, contratos, evolução mensal, satisfação, materiais, mapa de
+  calor, OS aguardando/pendentes). Cada um exporta **CSV** (Excel brasileiro), **XLSX** e **PDF**. Os números
+  são calculados no banco (funções `rel_*`, exclusivas de admin).
+- **Agenda** (`/admin/agenda`): visão semanal e mensal, filtro por técnico; **arraste** um chamado para outro
+  dia (mantém a hora) ou clique para escolher o horário. A lista "sem agendamento" mostra o que falta marcar.
+
+### Notificações e auditoria
+
+- O **sino** no cabeçalho avisa (atualiza a cada 45 s): chamado novo, atribuição/reagendamento, resposta do
+  cliente ou da equipe, chamado resolvido, avaliação recebida, OS aguardando assinatura e OS assinada. Cada
+  pessoa só vê as próprias notificações (nem o admin lê as dos outros).
+- **Auditoria** (`/admin/auditoria`): quem fez o quê e quando — usuários, clientes, unidades, contratos,
+  configurações, catálogos, cobrança ajustada depois da assinatura, reabertura de OS e mudanças de situação
+  da OS. Filtros por área, ação, autor e período; os registros não podem ser alterados nem apagados.
+
 ## 4. Dados de demonstração e testes
 
 ```bash
 # .env.local: SEED_DEMO=true e SEED_DEMO_PASSWORD=<senha>
 npm run seed:demo    # 2 clientes, unidades, contrato, 2 técnicos, 2 usuários de portal, chamados
-npm run test:unit    # validações (CPF/CNPJ alfanumérico, datas, contratos)
-npm run test:rls     # isolamento entre clientes e permissões por perfil (69 verificações)
-npm run build && npm run test:e2e   # e2e: login, cadastro completo (Fase 1), fluxo de chamados (Fase 2), OS e assinatura (Fase 3), cobrança (Fase 4), dashboard/relatórios/agenda (Fase 5), 375 px
+npm run test:unit        # regras puras (CPF/CNPJ, SLA, cobrança, período, agenda, auditoria...)
+npm run test:rls         # isolamento entre clientes e permissões por perfil
+npm run test:relatorios  # funções de relatório no banco (estrutura, somas, acesso só do admin)
+npm run test:fase6       # notificações, auditoria e limite de tentativas no banco
+npm run build && npm run test:e2e   # e2e (desktop + 375 px): login, cadastros, chamados, OS e assinatura,
+                                    # cobrança, dashboard/relatórios/agenda, notificações/auditoria/segurança
 ```
 
 > Os testes e2e rodam contra o banco configurado no `.env.local` e apagam os dados `[E2E]` que criam
@@ -129,14 +155,23 @@ Usuários demo (senha = `SEED_DEMO_PASSWORD`): `tecnico.demo@example.com`, `tecn
 - **RLS em todas as tabelas.** Cliente só vê o próprio `cliente_id` e nunca notas internas nem dados
   financeiros das visitas; técnico só vê chamados/OS atribuídos; admin vê tudo.
 - **Restrição de colunas por perfil** em triggers `*_guard` (ex.: técnico só altera o status do chamado;
-  cliente só avalia; ninguém troca a própria role).
+  cliente só avalia; ninguém troca a própria role; notificação só pode ser marcada como lida).
 - **OS assinada é imutável**; só `reabrir_os(os_id, motivo)` (admin) destrava, com auditoria.
 - **Exclusão física bloqueada** em chamados, OS, comentários, histórico e auditoria.
 - **Storage privado**: os buckets não têm policies para usuários; o servidor valida a permissão e emite
   URLs assinadas de curta duração.
+- **Link de assinatura**: token de 256 bits (só o hash fica no banco), uso único, validade, no máximo 10
+  tentativas e `Referrer-Policy: no-referrer` / sem cache.
+- **Limite de tentativas** (tabela `private.rate_limit`, função só do servidor): login (8 falhas por e-mail
+  e 40 por IP a cada 10 min), recuperação de senha, ativação de acesso e as páginas públicas de assinatura.
+- **Cabeçalhos HTTP** (`next.config.ts`): CSP restritiva (só a própria origem e o Supabase), HSTS,
+  `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, `Permissions-Policy` e `noindex`.
 - `service_role` só em código de servidor (`src/lib/supabase/admin.ts`, marcado `server-only`).
 - `src/proxy.ts` (antigo middleware) só faz o roteamento; a autorização é refeita em cada
   layout/action (`requireRole`) e garantida pela RLS.
+- As funções `rel_*`, `reabrir_os` e `consumo_contrato_mes` ficam chamáveis por usuários logados (o
+  advisor do Supabase acusa "SECURITY DEFINER executável"), mas cada uma confere o perfil por dentro —
+  coberto por `test:rls` e `test:relatorios`.
 
 ## 6. Deploy na Vercel
 
@@ -152,6 +187,19 @@ Usuários demo (senha = `SEED_DEMO_PASSWORD`): `tecnico.demo@example.com`, `tecn
 
 Vercel → Settings → Domains → adicione o domínio e crie o registro DNS indicado. Atualize
 `NEXT_PUBLIC_APP_URL` e a Site URL do Supabase.
+
+## Go-live
+
+Veja o passo a passo em [docs/CHECKLIST-PRODUCAO.md](docs/CHECKLIST-PRODUCAO.md). Para limpar os dados de
+demonstração/testes e zerar a numeração:
+
+```bash
+npm run golive:limpar                                   # simulação: mostra o que seria removido, sem alterar nada
+npm run golive:limpar -- --executar --confirmo=LIMPAR   # remove demonstração/testes (clientes "(DEMO)"/"[E2E]", @example.com)
+npm run golive:limpar -- --executar --confirmo=LIMPAR --tudo   # também apaga TODOS os chamados/OS (início do zero)
+```
+
+Nunca remove administradores, configurações nem catálogos. Faça um backup antes — a execução é irreversível.
 
 ## 7. Backup
 
